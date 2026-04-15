@@ -148,25 +148,25 @@ The simulation produces the following graded artifacts. Each maps to one or more
 
 All PIs below are drawn from the HIM 4363 FEM framework (Domains I, II, V, VI).
 
-| PI Code | Description | Criterion |
-|---------|-------------|-----------|
-| PI 1.1.1 | Identify health data elements and standards across care settings | 1 |
-| PI 1.1.2 | Apply data governance principles to health record content | 1 |
-| PI 1.2.1 | Evaluate data integrity within health information systems | 5 |
-| PI 1.3.1 | Assess documentation requirements across healthcare delivery settings | 1 |
-| PI 1.4.1 | Recommend compliance of health record content across the health system | 5 |
-| PI 2.1.1 | Identify privacy and security requirements for health information | 2 |
-| PI 2.1.2 | Apply confidentiality policies across healthcare delivery settings | 4 |
-| PI 2.2.1 | Evaluate compliance with information access and disclosure standards | 3 |
-| PI 2.3.1 | Describe compliance requirements throughout the health information life cycle | 2 |
-| PI 2.3.2 | Analyze information protection practices across facility types | 2 |
-| PI 5.1.1 | Identify federal and state regulations governing healthcare delivery settings | 3 |
-| PI 5.2.1 | Evaluate compliance with external regulatory and accreditation forces | 3 |
-| PI 5.3.1 | Analyze legal and ethical considerations specific to specialty care settings | 3 |
-| PI 6.1.1 | Identify organizational structures across healthcare delivery settings | 2 |
-| PI 6.3.1 | Describe quality improvement processes in healthcare organizations | 5 |
-| PI 6.5.1 | Evaluate workforce roles and interdisciplinary team functions | 2 |
-| PI 6.9.1 | Facilitate training needs for a healthcare organization | 4 |
-| PI 6.9.3 | Assess training effectiveness in health information management | 5 |
+| PI Code | Description | Criterion | How This Assignment Meets the Competency |
+|---------|-------------|-----------|------------------------------------------|
+| PI 1.1.1 | Identify health data elements and standards across care settings | 1 | Students identify which data elements are essential for an emergency MAR, patient ID wristband, and paper intake record when EHR systems are unavailable — requiring them to articulate what constitutes a complete, safe health record from first principles. |
+| PI 1.1.2 | Apply data governance principles to health record content | 1 | Students apply data governance principles when designing paper downtime forms and when building the back-entry workflow, determining how records must be structured to maintain integrity, traceability, and compliance throughout a 72-hour system outage. |
+| PI 1.2.1 | Evaluate data integrity within health information systems | 5 | The back-entry workflow station directly confronts data integrity failure: 6,400+ paper records with 11% unmatched, 34% missing DOB, and 18% illegible. Students must evaluate the integrity problem and design a QA process to resolve it before records re-enter the EHR. |
+| PI 1.3.1 | Assess documentation requirements across healthcare delivery settings | 1 | Students assess what documentation is required in an acute care hospital during downtime — including medication administration, patient identification, shift handoff, and intake — and must produce those records without electronic support. |
+| PI 1.4.1 | Recommend compliance of health record content across the health system | 5 | In the back-entry workflow and after-action summary, students recommend how paper records should be reconciled with EHR standards, and what compliance safeguards must be in place to ensure recovered records meet health system content requirements. |
+| PI 2.1.1 | Identify privacy and security requirements for health information | 2 | Students must identify which systems hold protected health information (EHR, LIS, PACS, pharmacy, billing), understand that LockBit ransomware has compromised that data, and apply that knowledge to justify their incident response decisions throughout the simulation. |
+| PI 2.1.2 | Apply confidentiality policies across healthcare delivery settings | 4 | The press statement requires students to apply confidentiality policy in practice — explicitly deciding what protected or operationally sensitive information must be withheld from public disclosure and articulating the legal and ethical rationale for each omission. |
+| PI 2.2.1 | Evaluate compliance with information access and disclosure standards | 3 | The CNIL breach notification requires students to evaluate what information must be disclosed under GDPR Article 33, to whom, by when, and at what level of completeness — directly applying access and disclosure compliance standards under regulatory time pressure. |
+| PI 2.3.1 | Describe compliance requirements throughout the health information life cycle | 2 | The simulation spans the full information life cycle during a breach: creation (paper forms), use (downtime operations), disclosure (CNIL, press, families), and recovery (back-entry). Students must navigate compliance requirements at each stage across three simulation days. |
+| PI 2.3.2 | Analyze information protection practices across facility types | 2 | Students analyze where the hospital's information protection practices failed (phishing access 11 days prior, undetected lateral movement) and evaluate whether the response decisions — network isolation, ransom, GDPR timing — reflect sound protection practice. |
+| PI 5.1.1 | Identify federal and state regulations governing healthcare delivery settings | 3 | Students identify applicable regulations governing breach response in a French hospital context, including GDPR Article 33 (CNIL notification), ANSSI reporting obligations, and the legal framework governing patient data disclosure — requiring them to name and apply the correct regulatory authority. |
+| PI 5.2.1 | Evaluate compliance with external regulatory and accreditation forces | 3 | The CNIL notification station simulates actual regulatory filing. Students evaluate whether the hospital is in compliance with the 72-hour GDPR notification requirement, what constitutes adequate disclosure, and what consequences follow from non-compliance or late filing. |
+| PI 5.3.1 | Analyze legal and ethical considerations specific to specialty care settings | 3 | The ransom decision requires students to analyze intersecting legal obligations (data recovery, patient safety, law enforcement guidance against payment) and ethical duties (patient care continuity, transparency) unique to a healthcare organization holding sensitive clinical data. |
+| PI 6.1.1 | Identify organizational structures across healthcare delivery settings | 2 | Students operate within an incident command structure (Incident Commander, HIM Director, CNO, IT Security, Communications Officer) and must identify how organizational hierarchy shapes decision authority, communication flow, and accountability during a hospital-wide crisis. |
+| PI 6.3.1 | Describe quality improvement processes in healthcare organizations | 5 | The after-action summary is a formal quality improvement exercise: students identify what went wrong, what decisions they would change, and what systemic recommendations would improve the hospital's cybersecurity preparedness — mirroring a real post-incident review process. |
+| PI 6.5.1 | Evaluate workforce roles and interdisciplinary team functions | 2 | Every decision requires the team to consider how multiple roles (clinical, administrative, IT, legal, communications) must coordinate. The shift handoff station specifically evaluates whether students understand what information each workforce role needs to continue safe operations during downtime. |
+| PI 6.9.1 | Facilitate training needs for a healthcare organization | 4 | The staff communication bulletin requires students to identify what 1,200 staff across all roles need to know and do immediately — effectively designing a real-time training intervention that must reach housekeeping staff and surgeons alike with clear, actionable instructions. |
+| PI 6.9.3 | Assess training effectiveness in health information management | 5 | The after-action summary asks students to evaluate whether their team's preparation and knowledge was adequate — identifying gaps in their own HIM training that the simulation exposed and assessing what additional training the hospital workforce would need before a future incident. |
 
 *18 of the 25 HIM 4363 FEM performance indicators are addressed in this simulation. PI 2.3.3, PI 6.9.2, and PI 1.4.2 are excluded as they are explicitly scoped to non-acute care settings; the simulation is set in an acute care hospital.*
