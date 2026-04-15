@@ -45,7 +45,7 @@ The simulation produces the following graded artifacts. Each maps to one or more
 ## Rubric
 
 ### Criterion 1: Downtime Documentation and Data Governance
-**Points: 60 | CAHIIM Outcomes: PI 1.1.1, PI 1.1.2, PI 1.3.1, PI 2.3.3**
+**Points: 60 | CAHIIM Outcomes: PI 1.1.1, PI 1.1.2, PI 1.3.1**
 
 *Evaluates the quality of paper-based documentation artifacts designed during downtime: the emergency MAR, patient ID wristband, shift handoff tool, and paper patient intake record. Focuses on whether essential data elements are present, whether patient safety is prioritized, and whether the team demonstrates understanding of health record content standards.*
 
@@ -90,7 +90,7 @@ The simulation produces the following graded artifacts. Each maps to one or more
 ---
 
 ### Criterion 4: Crisis Communication
-**Points: 32 | CAHIIM Outcomes: PI 2.1.2, PI 6.9.1, PI 6.9.2**
+**Points: 32 | CAHIIM Outcomes: PI 2.1.2, PI 6.9.1**
 
 *Evaluates the team's communication products: the staff bulletin, press statement, family information sheet, and board recommendation memo (communication dimension). Focuses on whether each product applies appropriate confidentiality and disclosure principles, reaches its intended audience effectively, and upholds the hospital's legal and ethical obligations.*
 
@@ -123,10 +123,10 @@ The simulation produces the following graded artifacts. Each maps to one or more
 
 | Criterion | Topic | PIs | Points |
 |-----------|-------|-----|--------|
-| 1 | Downtime Documentation and Data Governance | PI 1.1.1, 1.1.2, 1.3.1, 2.3.3 | 60 |
+| 1 | Downtime Documentation and Data Governance | PI 1.1.1, 1.1.2, 1.3.1 | 60 |
 | 2 | Cybersecurity Incident Response Decision-Making | PI 2.1.1, 2.3.1, 2.3.2, 6.1.1, 6.5.1 | 48 |
 | 3 | Regulatory Compliance and Legal Response | PI 2.2.1, 5.1.1, 5.2.1, 5.3.1 | 40 |
-| 4 | Crisis Communication | PI 2.1.2, 6.9.1, 6.9.2 | 32 |
+| 4 | Crisis Communication | PI 2.1.2, 6.9.1 | 32 |
 | 5 | Recovery Planning and Critical Reflection | PI 1.2.1, 1.4.1, 6.3.1, 6.9.3 | 20 |
 | | **Total** | | **200** |
 
@@ -160,7 +160,6 @@ All PIs below are drawn from the HIM 4363 FEM framework (Domains I, II, V, VI).
 | PI 2.2.1 | Evaluate compliance with information access and disclosure standards | 3 |
 | PI 2.3.1 | Describe compliance requirements throughout the health information life cycle | 2 |
 | PI 2.3.2 | Analyze information protection practices across facility types | 2 |
-| PI 2.3.3 | Assess privacy and security vulnerabilities in non-acute care settings | 1 |
 | PI 5.1.1 | Identify federal and state regulations governing healthcare delivery settings | 3 |
 | PI 5.2.1 | Evaluate compliance with external regulatory and accreditation forces | 3 |
 | PI 5.3.1 | Analyze legal and ethical considerations specific to specialty care settings | 3 |
@@ -168,7 +167,6 @@ All PIs below are drawn from the HIM 4363 FEM framework (Domains I, II, V, VI).
 | PI 6.3.1 | Describe quality improvement processes in healthcare organizations | 5 |
 | PI 6.5.1 | Evaluate workforce roles and interdisciplinary team functions | 2 |
 | PI 6.9.1 | Facilitate training needs for a healthcare organization | 4 |
-| PI 6.9.2 | Develop orientation and training materials for non-acute care settings | 4 |
 | PI 6.9.3 | Assess training effectiveness in health information management | 5 |
 
-*20 of the 25 HIM 4363 FEM performance indicators are addressed in this simulation.*
+*18 of the 25 HIM 4363 FEM performance indicators are addressed in this simulation. PI 2.3.3, PI 6.9.2, and PI 1.4.2 are excluded as they are explicitly scoped to non-acute care settings; the simulation is set in an acute care hospital.*
