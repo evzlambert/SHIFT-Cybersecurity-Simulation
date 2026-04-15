@@ -12,7 +12,12 @@ Audio:   Ensure audio/ directory contains slide_00.mp3 through slide_34.mp3
 
 import streamlit as st
 import base64
+import csv
+import io
+import json
 import os
+
+SUBMISSIONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "submissions")
 
 st.set_page_config(
     page_title="SHIFT Cyber Sim — Instructor Broadcast",
@@ -493,7 +498,7 @@ SLIDES.append(("breach", """
 <div class="event-card"><span class="event-time">06:33</span> — Patient portal goes dark. 47 telehealth appointments scheduled today.</div>
 <div class="event-card"><span class="event-time">06:35</span> — Scheduling unresponsive. 142 outpatient appointments unconfirmable.</div>
 <div class="event-card"><span class="event-time">06:38</span> — Billing and revenue cycle encrypted. No claims can be submitted.</div>
-<div class="event-card"><span class="event-time">06:40</span> — <strong>IT confirms: LockBit ransomware across EHR, LIS, PACS, pharmacy, billing.</strong></div>
+<div class="event-card"><span class="event-time">06:40</span> — <strong>IT confirms: LockBit variant' ransomware across EHR, LIS, PACS, pharmacy, billing</strong></div>
 <div class="event-card"><span class="event-time">06:42</span> — Forensics: initial access was <strong>11 days ago</strong> via phishing email to radiology tech.</div>
 </div>
 </div>""", "critical"))
@@ -1013,3 +1018,109 @@ with st.sidebar:
         if st.button(f"{prefix}{label}", key=f"pj_{idx}"):
             st.session_state.slide = idx
             st.rerun()
+
+    # ------------------------------------------------------------------
+    # Download all team submissions
+    # ------------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("### Download Team Submissions")
+
+    submission_files = sorted(
+        [f for f in os.listdir(SUBMISSIONS_DIR) if f.endswith(".json")]
+        if os.path.isdir(SUBMISSIONS_DIR) else []
+    )
+
+    if not submission_files:
+        st.caption("No submissions yet. Teams must click Export in the student app.")
+    else:
+        st.caption(f"{len(submission_files)} team(s) submitted")
+
+        # Load all reports
+        all_reports = []
+        for fname in submission_files:
+            fpath = os.path.join(SUBMISSIONS_DIR, fname)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    all_reports.append(json.load(f))
+            except Exception:
+                pass
+
+        # Combined JSON download
+        combined_json = json.dumps(all_reports, indent=2, ensure_ascii=False)
+        st.download_button(
+            "Download All (JSON)",
+            data=combined_json,
+            file_name="all_team_reports.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+
+        # CSV summary download
+        csv_buf = io.StringIO()
+
+        # Collect all decision titles and station IDs across all reports
+        all_decision_titles = []
+        all_station_ids = []
+        for r in all_reports:
+            for d in r.get("decisions", []):
+                t = d["title"]
+                if t not in all_decision_titles:
+                    all_decision_titles.append(t)
+            for s in r.get("stations", []):
+                sid = s.get("station_id", s["title"])
+                if sid not in all_station_ids:
+                    all_station_ids.append(sid)
+
+        # Collect all deliverable keys per station
+        station_deliverable_keys = {}
+        for r in all_reports:
+            for s in r.get("stations", []):
+                sid = s.get("station_id", s["title"])
+                for key in s.get("deliverables", {}).keys():
+                    station_deliverable_keys.setdefault(sid, [])
+                    if key not in station_deliverable_keys[sid]:
+                        station_deliverable_keys[sid].append(key)
+
+        # Build header row
+        header = ["team_name", "exported_at", "decisions_made", "stations_completed"]
+        for title in all_decision_titles:
+            header.append(f"decision: {title}")
+            header.append(f"justification: {title}")
+        for sid in all_station_ids:
+            for key in station_deliverable_keys.get(sid, []):
+                header.append(f"{sid}: {key}")
+        for i in range(1, 6):
+            header.append(f"after_action_q{i}")
+
+        writer = csv.DictWriter(csv_buf, fieldnames=header, extrasaction="ignore")
+        writer.writeheader()
+
+        for r in all_reports:
+            row = {
+                "team_name": r.get("team_name", ""),
+                "exported_at": r.get("exported_at", ""),
+                "decisions_made": len(r.get("decisions", [])),
+                "stations_completed": len(r.get("stations", [])),
+            }
+            for d in r.get("decisions", []):
+                row[f"decision: {d['title']}"] = d.get("choice", "")
+                row[f"justification: {d['title']}"] = d.get("justification", "")
+            for s in r.get("stations", []):
+                sid = s.get("station_id", s["title"])
+                for key, val in s.get("deliverables", {}).items():
+                    row[f"{sid}: {key}"] = val
+            aa = r.get("after_action", {})
+            for i in range(1, 6):
+                row[f"after_action_q{i}"] = aa.get(f"q{i}", "")
+            writer.writerow(row)
+
+        st.download_button(
+            "Download All (CSV)",
+            data=csv_buf.getvalue(),
+            file_name="all_team_reports.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+        # List teams
+        st.caption("Teams saved: " + ", ".join(r.get("team_name", "?") for r in all_reports))

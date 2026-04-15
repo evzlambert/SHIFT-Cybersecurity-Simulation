@@ -11,7 +11,14 @@ Launch:  python3 -m streamlit run student_app.py --server.port 8502
 
 import streamlit as st
 import json
+import os
 from datetime import datetime
+
+# ---------------------------------------------------------------------------
+# Submissions directory — auto-save each team's export here
+# ---------------------------------------------------------------------------
+SUBMISSIONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "submissions")
+os.makedirs(SUBMISSIONS_DIR, exist_ok=True)
 
 st.set_page_config(
     page_title="SHIFT Cyber Sim — Team Response",
@@ -1010,14 +1017,9 @@ STATIONS = {
         ),
         "materials": ["Blank A4 paper", "Pens / markers (multiple colors)", "Ruler (optional)"],
         "capture_prompts": [
-            {"key": "fields_included", "label": "List every field your team included on the MAR:",
-             "type": "text_area", "height": 120,
-             "placeholder": "e.g., Patient full name, DOB, MRN (or temp ID), Allergies, Medication name, Dose, Route, Frequency, Scheduled time, Actual time given, Nurse initials, Verifier initials..."},
             {"key": "safety_features", "label": "What safety features did you build in?",
              "type": "text_area", "height": 100,
              "placeholder": "e.g., Red allergy alert box, two-signature line, patient photo space, second identifier requirement..."},
-            {"key": "hardest_part", "label": "What was the hardest part of designing this form from scratch?",
-             "type": "text_area", "height": 80, "placeholder": ""},
         ],
         "quality_checks": [
             "Full patient name (first AND last)",
@@ -1087,9 +1089,6 @@ STATIONS = {
         ),
         "materials": ["Card stock strips (or paper cut to wristband size)", "Fine-tip markers", "Clear tape (to protect writing)"],
         "capture_prompts": [
-            {"key": "wristband_fields", "label": "What fields did you include on the wristband?",
-             "type": "text_area", "height": 100,
-             "placeholder": "e.g., Full name, DOB, Temp ID number, Allergies (in RED), Room/bed, Blood type..."},
             {"key": "martin_solution", "label": "How does your wristband solve the 14-Martins problem?",
              "type": "text_area", "height": 80,
              "placeholder": "e.g., We added a unique color-coded dot system, we require DOB + room number verbal confirmation..."},
@@ -1124,16 +1123,7 @@ STATIONS = {
             "SBAR, I-PASS, or your own structure. When done, log your design below."
         ),
         "materials": ["Blank A4 paper", "Pens"],
-        "capture_prompts": [
-            {"key": "handoff_format", "label": "What format/structure did you choose? (SBAR, I-PASS, custom?)",
-             "type": "text_area", "height": 60, "placeholder": ""},
-            {"key": "handoff_sections", "label": "List the sections on your handoff template:",
-             "type": "text_area", "height": 120,
-             "placeholder": "e.g., 1. Unit status overview, 2. Patient-by-patient status (name, dx, acuity, key issues), 3. Paper records location, 4. Active downtime procedures, 5. Outstanding tasks, 6. Safety concerns, 7. Staff emotional status..."},
-            {"key": "handoff_downtime_specific", "label": "What downtime-specific information did you include that wouldn't be in a normal handoff?",
-             "type": "text_area", "height": 80,
-             "placeholder": "e.g., Where paper MAR forms are stored, which patients have handwritten vs typed wristbands, who has been on paper longest..."},
-        ],
+        "capture_prompts": [],
         "quality_checks": [
             "Patient safety items (allergies, fall risks, isolation)",
             "Medication status (last doses, pending doses)",
@@ -1149,7 +1139,7 @@ STATIONS = {
     "s2_paper_record": {
         "phase": "Phase 2: Downtime",
         "title": "ACTION STATION: Complete a Paper Patient Record",
-        "time_minutes": 7,
+        "time_minutes": 12,
         "scenario": (
             "Your team has been making decisions about paper processes. Now experience it. "
             "A new patient is arriving: Marie DUPONT, age 74, admitted for chest pain. "
@@ -1166,14 +1156,7 @@ STATIONS = {
         ),
         "materials": ["Blank paper", "Pen (one color only — simulating reality)"],
         "capture_prompts": [
-            {"key": "time_taken", "label": "How long did the paper intake take (in minutes)?",
-             "type": "text_area", "height": 40, "placeholder": "e.g., 6 minutes"},
-            {"key": "fields_captured", "label": "What information did you include?",
-             "type": "text_area", "height": 120,
-             "placeholder": "List everything you wrote down: name, DOB, allergies, meds, vitals, history, chief complaint, assessment..."},
             {"key": "peer_review", "label": "After the swap: What did your teammate say was missing or hard to read?",
-             "type": "text_area", "height": 80, "placeholder": ""},
-            {"key": "reflection", "label": "How does this compare to electronic documentation? What surprised you?",
              "type": "text_area", "height": 80, "placeholder": ""},
         ],
         "quality_checks": [
@@ -1209,13 +1192,6 @@ STATIONS = {
         ),
         "materials": ["Paper", "Pen"],
         "capture_prompts": [
-            {"key": "statement_text", "label": "Your press statement (write the full text — every word will be quoted):",
-             "type": "text_area", "height": 200,
-             "placeholder": "Centre Hospitalier Sainte-Claire confirms that... [Write the complete statement. 150-300 words recommended.]"},
-            {"key": "key_message", "label": "What is your ONE key message? (The headline you want.)",
-             "type": "text_area", "height": 50, "placeholder": ""},
-            {"key": "tough_question", "label": "What tough question did your 'journalist' ask? How did you answer?",
-             "type": "text_area", "height": 80, "placeholder": ""},
             {"key": "not_saying", "label": "What are you deliberately NOT saying in this statement, and why?",
              "type": "text_area", "height": 80, "placeholder": "e.g., We are not confirming the ransom because... We are not disclosing the attack vector because..."},
         ],
@@ -1249,16 +1225,7 @@ STATIONS = {
             "Then log your work below."
         ),
         "materials": ["Paper", "Pen"],
-        "capture_prompts": [
-            {"key": "sheet_text", "label": "Your family information sheet (full text):",
-             "type": "text_area", "height": 200,
-             "placeholder": "Dear families and visitors of Centre Hospitalier Sainte-Claire,\n\nWe understand you have questions and concerns...\n\n[Write the full text including Q&A section]"},
-            {"key": "faqs", "label": "List the FAQ questions you included and your answers:",
-             "type": "text_area", "height": 150,
-             "placeholder": "Q: Is my family member safe?\nA: ...\n\nQ: Has my personal data been stolen?\nA: ...\n\nQ: When will systems be back?\nA: ..."},
-            {"key": "teammate_reaction", "label": "What did your teammate say when they read it as a 'worried family member'?",
-             "type": "text_area", "height": 60, "placeholder": ""},
-        ],
+        "capture_prompts": [],
         "quality_checks": [
             "Empathetic opening (not corporate/legal)",
             "Honest about the situation",
@@ -1543,9 +1510,6 @@ def render_station(station_id):
                 if val:
                     st.markdown(f"**{prompt['label']}**")
                     st.markdown(val)
-            checks = st.session_state.station_checks.get(station_id, [])
-            if checks:
-                st.markdown(f"**Quality self-assessment:** {len(checks)}/{len(s['quality_checks'])} items verified")
         return True
 
     # --- Active station ---
@@ -1569,49 +1533,33 @@ def render_station(station_id):
         unsafe_allow_html=True,
     )
 
-    st.markdown("---")
-    st.markdown("#### Log Your Work")
-
     field_values = {}
-    for prompt in s["capture_prompts"]:
-        val = st.text_area(
-            prompt["label"],
-            key=f"station_{station_id}_{prompt['key']}",
-            height=prompt.get("height", 100),
-            placeholder=prompt.get("placeholder", ""),
-        )
-        field_values[prompt["key"]] = val
+    if s["capture_prompts"]:
+        st.markdown("---")
+        st.markdown("#### Log Your Work")
+        for prompt in s["capture_prompts"]:
+            val = st.text_area(
+                prompt["label"],
+                key=f"station_{station_id}_{prompt['key']}",
+                height=prompt.get("height", 100),
+                placeholder=prompt.get("placeholder", ""),
+            )
+            field_values[prompt["key"]] = val
+
+    # Has at least one capture field filled (or no fields required)?
+    any_filled = not s["capture_prompts"] or any(v.strip() for v in field_values.values())
 
     st.markdown("---")
-    st.markdown("#### Quality Self-Assessment")
-    st.caption("Check off items your team addressed in your deliverable:")
-    checked = []
-    for i, check in enumerate(s["quality_checks"]):
-        if st.checkbox(check, key=f"qc_{station_id}_{i}"):
-            checked.append(check)
-
-    score = len(checked)
-    total = len(s["quality_checks"])
-    if score == total:
-        st.success(f"Excellent — {score}/{total} quality items covered!")
-    elif score >= total * 0.7:
-        st.info(f"Good — {score}/{total} quality items covered. Review the unchecked items.")
-    elif score > 0:
-        st.warning(f"{score}/{total} quality items covered. Consider what you missed.")
-
-    # Has at least one capture field filled?
-    any_filled = any(v.strip() for v in field_values.values())
-
     if st.button(f"Complete Station: {s['title'].replace('ACTION STATION: ', '')}",
                  key=f"btn_station_{station_id}", type="primary"):
         if any_filled:
             st.session_state.stations_complete[station_id] = True
             st.session_state.station_data[station_id] = field_values
-            st.session_state.station_checks[station_id] = checked
+            st.session_state.station_checks[station_id] = []
             st.session_state.log.append({
                 "phase": s["phase"],
                 "context": f"Station: {s['title']}",
-                "choice": f"Completed ({score}/{total} quality checks)",
+                "choice": "Completed",
                 "justification": "",
                 "time": datetime.now().strftime("%H:%M:%S"),
             })
@@ -1637,16 +1585,14 @@ def render_setup():
     team = st.text_input("Team Name", value=st.session_state.team_name, key="tn")
     if team:
         st.session_state.team_name = team
-    role = st.selectbox("Your Role", ROLES, index=ROLES.index(st.session_state.team_role), key="rl")
-    st.session_state.team_role = role
 
-    if team and role != "Not Selected":
-        st.success(f"Team **{team}** — Role: **{role}**")
+    if team:
+        st.success(f"Team **{team}**")
         if st.button("Ready — Waiting for instructor to begin", type="primary", use_container_width=True):
             st.session_state.current_phase = 1
             st.rerun()
     else:
-        st.info("Enter your team name and select a role.")
+        st.info("Enter your team name.")
 
 
 def render_decision_phase(phase_num, title, subtitle):
@@ -1743,7 +1689,7 @@ def render_break():
 
     st.markdown(f"**Decisions logged:** {len(st.session_state.log)}")
 
-    if st.button("Resume — Enter Day 2", type="primary", use_container_width=True):
+    if st.button("Resume", type="primary", use_container_width=True):
         st.session_state.current_phase = 4
         st.rerun()
 
@@ -1777,8 +1723,6 @@ def render_recovery():
                     if val:
                         st.markdown(f"**{prompt['label']}**")
                         st.markdown(val)
-                checks = st.session_state.station_checks.get(sid, [])
-                st.markdown(f"*Quality: {len(checks)}/{len(s['quality_checks'])} items*")
                 st.markdown("---")
 
     # Collect all ripple effects
@@ -1815,10 +1759,9 @@ def render_recovery():
     if st.button("Export Team Report", type="primary"):
         report = {
             "team_name": st.session_state.team_name,
-            "role": st.session_state.team_role,
+            "exported_at": datetime.now().isoformat(),
             "decisions": [],
             "stations": [],
-            "communications": st.session_state.comms,
             "after_action": {f"q{i}": st.session_state.get(f"aa{i}", "") for i in range(1, 6)},
         }
         for did, idx in st.session_state.decisions.items():
@@ -1836,20 +1779,27 @@ def render_recovery():
             if has_station_complete(sid):
                 s = STATIONS[sid]
                 data = st.session_state.station_data.get(sid, {})
-                checks = st.session_state.station_checks.get(sid, [])
                 report["stations"].append({
+                    "station_id": sid,
                     "phase": s["phase"],
                     "title": s["title"],
                     "deliverables": data,
-                    "quality_score": f"{len(checks)}/{len(s['quality_checks'])}",
-                    "quality_items_checked": checks,
                 })
+        report_json = json.dumps(report, indent=2, ensure_ascii=False)
+
+        # Save to submissions folder on the server (overwrites if same team exports again)
+        safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in st.session_state.team_name).strip()
+        save_path = os.path.join(SUBMISSIONS_DIR, f"{safe_name}.json")
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(report_json)
+
         st.download_button(
             "Download Report (JSON)",
-            data=json.dumps(report, indent=2, ensure_ascii=False),
+            data=report_json,
             file_name=f"team_report_{st.session_state.team_name}.json",
             mime="application/json",
         )
+        st.success("Report saved. Your instructor can now download all team reports.")
 
 
 # ---------------------------------------------------------------------------
