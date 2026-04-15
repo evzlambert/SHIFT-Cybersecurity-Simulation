@@ -1257,13 +1257,7 @@ STATIONS = {
             "carefully. Then enter it below."
         ),
         "materials": ["Paper", "Pen"],
-        "capture_prompts": [
-            {"key": "memo_text", "label": "Your board recommendation memo (full text):",
-             "type": "text_area", "height": 250,
-             "placeholder": "CONFIDENTIAL — BOARD OF DIRECTORS\nRE: Ransomware Incident — Recommendation\nDATE: [Day 3]\n\nSITUATION:\n...\n\nOPTIONS CONSIDERED:\n...\n\nRECOMMENDATION:\n...\n\nRATIONALE:\n...\n\nRISKS:\n...\n\nFINANCIAL IMPLICATIONS:\n..."},
-            {"key": "dissent", "label": "Was there any disagreement within your team about the recommendation? What was the counterargument?",
-             "type": "text_area", "height": 80, "placeholder": ""},
-        ],
+        "capture_prompts": [],
         "quality_checks": [
             "Clear situation summary (accessible to non-technical readers)",
             "All options presented (not just the recommended one)",
