@@ -1688,6 +1688,120 @@ def render_break():
         st.rerun()
 
 
+# ---------------------------------------------------------------------------
+# PDF report generator
+# ---------------------------------------------------------------------------
+def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
+    from fpdf import FPDF
+
+    aa_questions = [
+        "1. What was the single most important decision your team made? Why?",
+        "2. Which decision would you change? What would you do differently?",
+        "3. Which role had the most difficult job? Why?",
+        "4. What is one thing about cybersecurity in healthcare you didn't appreciate before?",
+        "5. Your top 3 recommendations for hospital cybersecurity preparedness:",
+    ]
+
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.set_auto_page_break(auto=True, margin=20)
+    pdf.set_margins(20, 20, 20)
+    pdf.add_page()
+    W = pdf.w - 40  # usable width
+
+    def section_header(title):
+        pdf.ln(4)
+        pdf.set_fill_color(30, 50, 80)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.cell(W, 8, f"  {title}", fill=True, ln=True)
+        pdf.set_text_color(30, 30, 30)
+        pdf.ln(3)
+
+    def field_label(text):
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_text_color(80, 80, 80)
+        pdf.multi_cell(W, 5, text)
+        pdf.set_text_color(30, 30, 30)
+
+    def body_text(text, italic=False):
+        pdf.set_font("Helvetica", "I" if italic else "", 10)
+        pdf.multi_cell(W, 6, text.strip() if text.strip() else "(no response)")
+        pdf.ln(2)
+
+    # Title block
+    pdf.set_font("Helvetica", "B", 18)
+    pdf.set_text_color(20, 40, 80)
+    pdf.cell(W, 12, "SHIFT Cybersecurity Simulation", ln=True)
+    pdf.set_font("Helvetica", "B", 13)
+    pdf.set_text_color(80, 80, 80)
+    pdf.cell(W, 8, "Team Response Report", ln=True)
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(60, 60, 60)
+    pdf.cell(W, 6, f"Team: {team_name}", ln=True)
+    pdf.cell(W, 6, f"Submitted: {now.strftime('%B %d, %Y  %H:%M')}", ln=True)
+    pdf.ln(4)
+    pdf.set_draw_color(180, 180, 180)
+    pdf.line(20, pdf.get_y(), 20 + W, pdf.get_y())
+    pdf.ln(5)
+
+    # Decisions
+    section_header("DECISIONS & JUSTIFICATIONS")
+    current_phase = None
+    for entry in decisions_data:
+        if entry["phase"] != current_phase:
+            current_phase = entry["phase"]
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.set_text_color(180, 80, 20)
+            pdf.multi_cell(W, 7, current_phase)
+            pdf.set_text_color(30, 30, 30)
+
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_text_color(20, 40, 80)
+        pdf.multi_cell(W, 6, entry["title"])
+        pdf.set_text_color(30, 30, 30)
+
+        field_label("Question:")
+        body_text(entry["question"], italic=True)
+        field_label("Team chose:")
+        body_text(entry["choice"])
+        field_label("Justification:")
+        body_text(entry["justification"] if entry["justification"].strip() else "(none provided)")
+        pdf.ln(2)
+
+    # Stations
+    if stations_data:
+        section_header("ACTION STATION DELIVERABLES")
+        for s in stations_data:
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.set_text_color(20, 40, 80)
+            pdf.multi_cell(W, 6, s["title"])
+            pdf.set_font("Helvetica", "I", 9)
+            pdf.set_text_color(100, 100, 100)
+            pdf.cell(W, 5, s["phase"], ln=True)
+            pdf.set_text_color(30, 30, 30)
+            pdf.ln(1)
+            prompts_by_key = {p["key"]: p["label"] for p in s["prompts"]}
+            if s["deliverables"]:
+                for key, lbl in prompts_by_key.items():
+                    val = s["deliverables"].get(key, "")
+                    field_label(lbl)
+                    body_text(val)
+            else:
+                body_text("(no capture fields for this station)", italic=True)
+            pdf.ln(2)
+
+    # After-action
+    section_header("AFTER-ACTION REFLECTION")
+    for i, question in enumerate(aa_questions, 1):
+        answer = after_action.get(f"q{i}", "").strip()
+        field_label(question)
+        body_text(answer)
+        pdf.ln(1)
+
+    return bytes(pdf.output())
+
+
 def render_recovery():
     st.markdown('<h2 class="phase-header">Recovery Planning</h2>', unsafe_allow_html=True)
     st.caption("Hour 72+ — Complete your after-action summary")
@@ -1781,99 +1895,20 @@ def render_recovery():
                     "prompts": s["capture_prompts"],
                 })
 
-        # --- JSON report ---
-        report_json = json.dumps({
-            "team_name": st.session_state.team_name,
-            "exported_at": now.isoformat(),
-            "decisions": decisions_data,
-            "stations": [
-                {"station_id": s["station_id"], "phase": s["phase"],
-                 "title": s["title"], "deliverables": s["deliverables"]}
-                for s in stations_data
-            ],
-            "after_action": after_action,
-        }, indent=2, ensure_ascii=False)
-
-        # --- Readable text report ---
-        sep = "=" * 60
-        thin = "-" * 40
-        aa_questions = [
-            "What was the single most important decision your team made? Why?",
-            "Which decision would you change? What would you do differently?",
-            "Which role had the most difficult job? Why?",
-            "What is one thing about cybersecurity in healthcare you didn't appreciate before?",
-            "Your top 3 recommendations for hospital cybersecurity preparedness:",
-        ]
-        lines = [
-            "SHIFT CYBERSECURITY SIMULATION — TEAM RESPONSE REPORT",
-            sep,
-            f"Team:      {st.session_state.team_name}",
-            f"Exported:  {now.strftime('%Y-%m-%d %H:%M')}",
-            "",
-        ]
-
-        lines += [sep, "DECISIONS & JUSTIFICATIONS", sep, ""]
-        current_phase = None
-        for entry in decisions_data:
-            if entry["phase"] != current_phase:
-                current_phase = entry["phase"]
-                lines += [f"[ {current_phase} ]", ""]
-            lines += [
-                f"DECISION: {entry['title']}",
-                f"Question: {entry['question']}",
-                thin,
-                f"Team chose: {entry['choice']}",
-                "",
-                f"Justification:",
-                entry["justification"] if entry["justification"].strip() else "(none provided)",
-                "",
-                f"Consequence: {entry['consequence']}",
-                f"Ripple effect: {entry['ripple']}" if entry["ripple"] else "",
-                "",
-            ]
-
-        lines += [sep, "ACTION STATION DELIVERABLES", sep, ""]
-        for s in stations_data:
-            lines += [f"STATION: {s['title']}", f"Phase: {s['phase']}", thin]
-            prompts_by_key = {p["key"]: p["label"] for p in s["prompts"]}
-            if s["deliverables"]:
-                for key, label in prompts_by_key.items():
-                    val = s["deliverables"].get(key, "").strip()
-                    lines += [
-                        f"{label}",
-                        val if val else "(no response)",
-                        "",
-                    ]
-            else:
-                lines.append("(no capture fields for this station)")
-            lines.append("")
-
-        lines += [sep, "AFTER-ACTION REFLECTION", sep, ""]
-        for i, question in enumerate(aa_questions, 1):
-            answer = after_action.get(f"q{i}", "").strip()
-            lines += [
-                f"Q{i}. {question}",
-                answer if answer else "(no response)",
-                "",
-            ]
-
-        report_text = "\n".join(lines)
-
-        # Local save (works when running on your own machine)
-        safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in st.session_state.team_name).strip()
-        save_path = os.path.join(SUBMISSIONS_DIR, f"{safe_name}.json")
-        with open(save_path, "w", encoding="utf-8") as f:
-            f.write(report_json)
+        # Generate PDF
+        pdf_bytes = _generate_pdf(
+            st.session_state.team_name, now, decisions_data, stations_data, after_action
+        )
 
         st.success(
-            "✅ Report ready! Download the file below and upload it to the Canvas assignment."
+            "✅ Report ready! Download the PDF below and upload it to the Canvas assignment."
         )
 
         st.download_button(
-            "📄 Download Report (.txt)",
-            data=report_text.encode("utf-8"),
-            file_name=f"SHIFT_Cyber_{st.session_state.team_name}.txt",
-            mime="text/plain",
+            "📄 Download Report (PDF)",
+            data=pdf_bytes,
+            file_name=f"SHIFT_Cyber_{st.session_state.team_name}.pdf",
+            mime="application/pdf",
             use_container_width=True,
         )
 
