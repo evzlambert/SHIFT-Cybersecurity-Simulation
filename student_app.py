@@ -1866,7 +1866,7 @@ def render_recovery():
             f.write(report_json)
 
         st.success(
-            "✅ Report ready! Download the file below and email it to your instructor at **joshuae.lambert@gmail.com**."
+            "✅ Report ready! Download the file below and upload it to the Canvas assignment."
         )
 
         st.download_button(
