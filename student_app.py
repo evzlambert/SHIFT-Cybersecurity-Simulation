@@ -14,49 +14,8 @@ import json
 import os
 from datetime import datetime
 
-try:
-    import gspread
-    from google.oauth2.service_account import Credentials as GCreds
-    _GSHEETS_AVAILABLE = True
-except ImportError:
-    _GSHEETS_AVAILABLE = False
-
-_GSHEETS_SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-]
-
-def _get_sheet():
-    """Return the first sheet of the configured Google Sheet, or None."""
-    if not _GSHEETS_AVAILABLE:
-        return None
-    try:
-        creds_info = st.secrets.get("gcp_service_account")
-        sheet_url = st.secrets.get("google_sheet_url", "")
-        if not creds_info or not sheet_url:
-            return None
-        creds = GCreds.from_service_account_info(dict(creds_info), scopes=_GSHEETS_SCOPES)
-        client = gspread.authorize(creds)
-        return client.open_by_url(sheet_url).sheet1
-    except Exception:
-        return None
-
-def _save_to_gsheet(team_name: str, report_text: str) -> bool:
-    """Append one row (team, timestamp, full report) to the Google Sheet."""
-    sheet = _get_sheet()
-    if sheet is None:
-        return False
-    try:
-        sheet.append_row(
-            [team_name, datetime.now().strftime("%Y-%m-%d %H:%M"), report_text],
-            value_input_option="RAW",
-        )
-        return True
-    except Exception:
-        return False
-
 # ---------------------------------------------------------------------------
-# Submissions directory — local fallback when running outside Streamlit Cloud
+# Submissions directory — local save when running the app on your own machine
 # ---------------------------------------------------------------------------
 SUBMISSIONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "submissions")
 os.makedirs(SUBMISSIONS_DIR, exist_ok=True)
@@ -1900,40 +1859,23 @@ def render_recovery():
 
         report_text = "\n".join(lines)
 
-        # Save to Google Sheets (primary — works on Streamlit Community Cloud)
-        sheet_saved = _save_to_gsheet(st.session_state.team_name, report_text)
-
-        # Local filesystem fallback (useful when running the app locally)
+        # Local save (works when running on your own machine)
         safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in st.session_state.team_name).strip()
         save_path = os.path.join(SUBMISSIONS_DIR, f"{safe_name}.json")
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(report_json)
 
-        if sheet_saved:
-            st.success("✅ Report submitted to instructor. Your responses have been recorded.")
-        else:
-            st.warning(
-                "⚠️ Could not submit automatically. "
-                "Please download the report below and email it to your instructor."
-            )
+        st.success(
+            "✅ Report ready! Download the file below and email it to your instructor at **joshuae.lambert@gmail.com**."
+        )
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.download_button(
-                "📄 Download Readable Report (.txt)",
-                data=report_text.encode("utf-8"),
-                file_name=f"SHIFT_Cyber_{st.session_state.team_name}.txt",
-                mime="text/plain",
-                use_container_width=True,
-            )
-        with col2:
-            st.download_button(
-                "⬇ Download Raw Data (JSON)",
-                data=report_json,
-                file_name=f"SHIFT_Cyber_{st.session_state.team_name}.json",
-                mime="application/json",
-                use_container_width=True,
-            )
+        st.download_button(
+            "📄 Download Report (.txt)",
+            data=report_text.encode("utf-8"),
+            file_name=f"SHIFT_Cyber_{st.session_state.team_name}.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
 
 
 # ---------------------------------------------------------------------------
