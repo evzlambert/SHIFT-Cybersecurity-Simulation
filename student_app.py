@@ -14,8 +14,49 @@ import json
 import os
 from datetime import datetime
 
+try:
+    import gspread
+    from google.oauth2.service_account import Credentials as GCreds
+    _GSHEETS_AVAILABLE = True
+except ImportError:
+    _GSHEETS_AVAILABLE = False
+
+_GSHEETS_SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
+
+def _get_sheet():
+    """Return the first sheet of the configured Google Sheet, or None."""
+    if not _GSHEETS_AVAILABLE:
+        return None
+    try:
+        creds_info = st.secrets.get("gcp_service_account")
+        sheet_url = st.secrets.get("google_sheet_url", "")
+        if not creds_info or not sheet_url:
+            return None
+        creds = GCreds.from_service_account_info(dict(creds_info), scopes=_GSHEETS_SCOPES)
+        client = gspread.authorize(creds)
+        return client.open_by_url(sheet_url).sheet1
+    except Exception:
+        return None
+
+def _save_to_gsheet(team_name: str, report_text: str) -> bool:
+    """Append one row (team, timestamp, full report) to the Google Sheet."""
+    sheet = _get_sheet()
+    if sheet is None:
+        return False
+    try:
+        sheet.append_row(
+            [team_name, datetime.now().strftime("%Y-%m-%d %H:%M"), report_text],
+            value_input_option="RAW",
+        )
+        return True
+    except Exception:
+        return False
+
 # ---------------------------------------------------------------------------
-# Submissions directory — auto-save each team's export here
+# Submissions directory — local fallback when running outside Streamlit Cloud
 # ---------------------------------------------------------------------------
 SUBMISSIONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "submissions")
 os.makedirs(SUBMISSIONS_DIR, exist_ok=True)
@@ -1751,49 +1792,148 @@ def render_recovery():
 
     st.markdown("---")
     if st.button("Export Team Report", type="primary"):
-        report = {
-            "team_name": st.session_state.team_name,
-            "exported_at": datetime.now().isoformat(),
-            "decisions": [],
-            "stations": [],
-            "after_action": {f"q{i}": st.session_state.get(f"aa{i}", "") for i in range(1, 6)},
-        }
+        now = datetime.now()
+        after_action = {f"q{i}": st.session_state.get(f"aa{i}", "") for i in range(1, 6)}
+
+        # Build structured data
+        decisions_data = []
         for did, idx in st.session_state.decisions.items():
             d = DECISIONS[did]
             opt = d["options"][idx]
-            report["decisions"].append({
+            decisions_data.append({
                 "phase": d["phase"],
                 "title": d["title"],
+                "question": d["question"],
                 "choice": opt["text"],
                 "consequence": opt["consequence_text"],
                 "ripple": opt.get("ripple", ""),
                 "justification": st.session_state.justifications.get(did, ""),
             })
+        stations_data = []
         for sid in STATIONS:
             if has_station_complete(sid):
                 s = STATIONS[sid]
                 data = st.session_state.station_data.get(sid, {})
-                report["stations"].append({
+                stations_data.append({
                     "station_id": sid,
                     "phase": s["phase"],
                     "title": s["title"],
                     "deliverables": data,
+                    "prompts": s["capture_prompts"],
                 })
-        report_json = json.dumps(report, indent=2, ensure_ascii=False)
 
-        # Save to submissions folder on the server (overwrites if same team exports again)
+        # --- JSON report ---
+        report_json = json.dumps({
+            "team_name": st.session_state.team_name,
+            "exported_at": now.isoformat(),
+            "decisions": decisions_data,
+            "stations": [
+                {"station_id": s["station_id"], "phase": s["phase"],
+                 "title": s["title"], "deliverables": s["deliverables"]}
+                for s in stations_data
+            ],
+            "after_action": after_action,
+        }, indent=2, ensure_ascii=False)
+
+        # --- Readable text report ---
+        sep = "=" * 60
+        thin = "-" * 40
+        aa_questions = [
+            "What was the single most important decision your team made? Why?",
+            "Which decision would you change? What would you do differently?",
+            "Which role had the most difficult job? Why?",
+            "What is one thing about cybersecurity in healthcare you didn't appreciate before?",
+            "Your top 3 recommendations for hospital cybersecurity preparedness:",
+        ]
+        lines = [
+            "SHIFT CYBERSECURITY SIMULATION — TEAM RESPONSE REPORT",
+            sep,
+            f"Team:      {st.session_state.team_name}",
+            f"Exported:  {now.strftime('%Y-%m-%d %H:%M')}",
+            "",
+        ]
+
+        lines += [sep, "DECISIONS & JUSTIFICATIONS", sep, ""]
+        current_phase = None
+        for entry in decisions_data:
+            if entry["phase"] != current_phase:
+                current_phase = entry["phase"]
+                lines += [f"[ {current_phase} ]", ""]
+            lines += [
+                f"DECISION: {entry['title']}",
+                f"Question: {entry['question']}",
+                thin,
+                f"Team chose: {entry['choice']}",
+                "",
+                f"Justification:",
+                entry["justification"] if entry["justification"].strip() else "(none provided)",
+                "",
+                f"Consequence: {entry['consequence']}",
+                f"Ripple effect: {entry['ripple']}" if entry["ripple"] else "",
+                "",
+            ]
+
+        lines += [sep, "ACTION STATION DELIVERABLES", sep, ""]
+        for s in stations_data:
+            lines += [f"STATION: {s['title']}", f"Phase: {s['phase']}", thin]
+            prompts_by_key = {p["key"]: p["label"] for p in s["prompts"]}
+            if s["deliverables"]:
+                for key, label in prompts_by_key.items():
+                    val = s["deliverables"].get(key, "").strip()
+                    lines += [
+                        f"{label}",
+                        val if val else "(no response)",
+                        "",
+                    ]
+            else:
+                lines.append("(no capture fields for this station)")
+            lines.append("")
+
+        lines += [sep, "AFTER-ACTION REFLECTION", sep, ""]
+        for i, question in enumerate(aa_questions, 1):
+            answer = after_action.get(f"q{i}", "").strip()
+            lines += [
+                f"Q{i}. {question}",
+                answer if answer else "(no response)",
+                "",
+            ]
+
+        report_text = "\n".join(lines)
+
+        # Save to Google Sheets (primary — works on Streamlit Community Cloud)
+        sheet_saved = _save_to_gsheet(st.session_state.team_name, report_text)
+
+        # Local filesystem fallback (useful when running the app locally)
         safe_name = "".join(c if c.isalnum() or c in "-_ " else "_" for c in st.session_state.team_name).strip()
         save_path = os.path.join(SUBMISSIONS_DIR, f"{safe_name}.json")
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(report_json)
 
-        st.download_button(
-            "Download Report (JSON)",
-            data=report_json,
-            file_name=f"team_report_{st.session_state.team_name}.json",
-            mime="application/json",
-        )
-        st.success("Report saved. Your instructor can now download all team reports.")
+        if sheet_saved:
+            st.success("✅ Report submitted to instructor. Your responses have been recorded.")
+        else:
+            st.warning(
+                "⚠️ Could not submit automatically. "
+                "Please download the report below and email it to your instructor."
+            )
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.download_button(
+                "📄 Download Readable Report (.txt)",
+                data=report_text.encode("utf-8"),
+                file_name=f"SHIFT_Cyber_{st.session_state.team_name}.txt",
+                mime="text/plain",
+                use_container_width=True,
+            )
+        with col2:
+            st.download_button(
+                "⬇ Download Raw Data (JSON)",
+                data=report_json,
+                file_name=f"SHIFT_Cyber_{st.session_state.team_name}.json",
+                mime="application/json",
+                use_container_width=True,
+            )
 
 
 # ---------------------------------------------------------------------------
