@@ -1,24 +1,31 @@
 """
 Generate narration audio for the Instructor Projection App.
-Uses Microsoft Edge TTS (neural voices, free, no API key).
+Uses OpenAI TTS (tts-1-hd model — natural-sounding narrator).
 
 Usage:  python3 generate_audio.py
 Output: audio/slide_00.mp3 through audio/slide_34.mp3
 
-Voice: en-US-GuyNeural (professional male narrator)
-Alternative voices:
-  en-US-JennyNeural (female)
-  en-GB-RyanNeural (British male)
-  en-GB-SoniaNeural (British female)
+Requires: OPENAI_API_KEY environment variable
+  export OPENAI_API_KEY=sk-...
+
+Voice options (set VOICE below):
+  onyx    — deep, authoritative male (default)
+  echo    — clear, neutral male
+  nova    — warm female
+  alloy   — balanced, neutral
+  shimmer — softer female
+  fable   — expressive, British-inflected
 """
 
-import asyncio
-import edge_tts
 import os
+from openai import OpenAI
 
-VOICE = "en-US-GuyNeural"
+VOICE = "onyx"
+MODEL = "tts-1-hd"
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "audio")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # ---------------------------------------------------------------------------
 # Narration scripts — one per slide
@@ -491,16 +498,22 @@ NARRATIONS = {
 }
 
 
-async def generate_all():
-    for slide_num, text in NARRATIONS.items():
+def generate_all():
+    total = len(NARRATIONS)
+    for i, (slide_num, text) in enumerate(sorted(NARRATIONS.items()), 1):
         filename = os.path.join(OUTPUT_DIR, f"slide_{slide_num:02d}.mp3")
-        print(f"Generating slide {slide_num:02d}... ", end="", flush=True)
-        communicate = edge_tts.Communicate(text, VOICE, rate="-5%", pitch="-2Hz")
-        await communicate.save(filename)
+        print(f"[{i:2d}/{total}] Slide {slide_num:02d}... ", end="", flush=True)
+        response = client.audio.speech.create(
+            model=MODEL,
+            voice=VOICE,
+            input=text,
+            response_format="mp3",
+        )
+        response.stream_to_file(filename)
         size_kb = os.path.getsize(filename) / 1024
         print(f"OK ({size_kb:.0f} KB)")
-    print(f"\nDone. {len(NARRATIONS)} audio files generated in {OUTPUT_DIR}/")
+    print(f"\nDone. {total} files written to {OUTPUT_DIR}/")
 
 
 if __name__ == "__main__":
-    asyncio.run(generate_all())
+    generate_all()
