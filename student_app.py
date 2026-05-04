@@ -1692,7 +1692,15 @@ def render_break():
 # PDF report generator
 # ---------------------------------------------------------------------------
 def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
+    import unicodedata
     from fpdf import FPDF
+
+    def _s(text):
+        """Normalize Unicode and strip chars not encodable in Latin-1."""
+        if text is None:
+            return ""
+        normalized = unicodedata.normalize("NFKD", str(text))
+        return normalized.encode("latin-1", errors="replace").decode("latin-1")
 
     aa_questions = [
         "1. What was the single most important decision your team made? Why?",
@@ -1713,19 +1721,20 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
         pdf.set_fill_color(30, 50, 80)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(W, 8, f"  {title}", fill=True, ln=True)
+        pdf.cell(W, 8, f"  {_s(title)}", fill=True, ln=True)
         pdf.set_text_color(30, 30, 30)
         pdf.ln(3)
 
     def field_label(text):
         pdf.set_font("Helvetica", "B", 9)
         pdf.set_text_color(80, 80, 80)
-        pdf.multi_cell(W, 5, text)
+        pdf.multi_cell(W, 5, _s(text))
         pdf.set_text_color(30, 30, 30)
 
     def body_text(text, italic=False):
         pdf.set_font("Helvetica", "I" if italic else "", 10)
-        pdf.multi_cell(W, 6, text.strip() if text.strip() else "(no response)")
+        cleaned = _s(text).strip()
+        pdf.multi_cell(W, 6, cleaned if cleaned else "(no response)")
         pdf.ln(2)
 
     # Title block
@@ -1738,7 +1747,7 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
     pdf.ln(2)
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(60, 60, 60)
-    pdf.cell(W, 6, f"Team: {team_name}", ln=True)
+    pdf.cell(W, 6, f"Team: {_s(team_name)}", ln=True)
     pdf.cell(W, 6, f"Submitted: {now.strftime('%B %d, %Y  %H:%M')}", ln=True)
     pdf.ln(4)
     pdf.set_draw_color(180, 180, 180)
@@ -1753,12 +1762,12 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
             current_phase = entry["phase"]
             pdf.set_font("Helvetica", "B", 10)
             pdf.set_text_color(180, 80, 20)
-            pdf.multi_cell(W, 7, current_phase)
+            pdf.multi_cell(W, 7, _s(current_phase))
             pdf.set_text_color(30, 30, 30)
 
         pdf.set_font("Helvetica", "B", 10)
         pdf.set_text_color(20, 40, 80)
-        pdf.multi_cell(W, 6, entry["title"])
+        pdf.multi_cell(W, 6, _s(entry["title"]))
         pdf.set_text_color(30, 30, 30)
 
         field_label("Question:")
@@ -1775,10 +1784,10 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
         for s in stations_data:
             pdf.set_font("Helvetica", "B", 10)
             pdf.set_text_color(20, 40, 80)
-            pdf.multi_cell(W, 6, s["title"])
+            pdf.multi_cell(W, 6, _s(s["title"]))
             pdf.set_font("Helvetica", "I", 9)
             pdf.set_text_color(100, 100, 100)
-            pdf.cell(W, 5, s["phase"], ln=True)
+            pdf.cell(W, 5, _s(s["phase"]), ln=True)
             pdf.set_text_color(30, 30, 30)
             pdf.ln(1)
             prompts_by_key = {p["key"]: p["label"] for p in s["prompts"]}
