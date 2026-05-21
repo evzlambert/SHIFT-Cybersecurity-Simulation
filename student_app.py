@@ -1460,7 +1460,18 @@ def render_decision(decision_id):
     if has_decided(decision_id):
         idx = st.session_state.decisions[decision_id]
         chosen = d["options"][idx]
-        st.success(f"**{d['title']}** — Locked in: {chosen['text'][:80]}...")
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.success(f"**{d['title']}** — Locked in: {chosen['text'][:80]}...")
+        with col2:
+            if st.button("✏️ Edit", key=f"edit_dec_{decision_id}", help="Unlock to change your answer"):
+                st.session_state.decisions.pop(decision_id, None)
+                st.session_state.justifications.pop(decision_id, None)
+                st.session_state.log = [
+                    e for e in st.session_state.log
+                    if e.get("context") != d["title"]
+                ]
+                st.rerun()
         render_consequence(decision_id)
         return True
 
@@ -1493,10 +1504,22 @@ def render_station(station_id):
     s = STATIONS[station_id]
 
     if has_station_complete(station_id):
-        st.markdown(
-            f'<div class="station-complete"><strong>{s["title"]}</strong> — Completed</div>',
-            unsafe_allow_html=True,
-        )
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.markdown(
+                f'<div class="station-complete"><strong>{s["title"]}</strong> — Completed</div>',
+                unsafe_allow_html=True,
+            )
+        with col2:
+            if st.button("✏️ Edit", key=f"edit_stn_{station_id}", help="Redo this station"):
+                st.session_state.stations_complete.pop(station_id, None)
+                st.session_state.station_data.pop(station_id, None)
+                st.session_state.station_checks.pop(station_id, None)
+                st.session_state.log = [
+                    e for e in st.session_state.log
+                    if e.get("context") != f"Station: {s['title']}"
+                ]
+                st.rerun()
         with st.expander("View your station deliverable", expanded=False):
             data = st.session_state.station_data.get(station_id, {})
             for prompt in s["capture_prompts"]:
@@ -1589,7 +1612,22 @@ def render_setup():
         st.info("Enter your team name.")
 
 
+_PHASE_PREV = {1: 0, 2: 1, 4: 3, 5: 4, 6: 5}
+_PHASE_LABELS = {0: "Setup", 1: "The Breach", 2: "Downtime",
+                 3: "Break", 4: "Escalation", 5: "Critical Decisions", 6: "Recovery"}
+
+
+def _back_button(phase_num):
+    if phase_num in _PHASE_PREV:
+        prev = _PHASE_PREV[phase_num]
+        if st.button(f"← Back to {_PHASE_LABELS[prev]}", key=f"back_{phase_num}"):
+            st.session_state.current_phase = prev
+            st.rerun()
+        st.markdown("")
+
+
 def render_decision_phase(phase_num, title, subtitle):
+    _back_button(phase_num)
     st.markdown(f'<h2 class="phase-header">{title}</h2>', unsafe_allow_html=True)
     st.caption(subtitle)
 
@@ -1668,6 +1706,7 @@ def render_decision_phase(phase_num, title, subtitle):
 
 
 def render_break():
+    _back_button(3)
     st.markdown("## Break Time")
     st.markdown("Review your decisions and consequences so far.")
 
@@ -1694,6 +1733,7 @@ def render_break():
 def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
     import unicodedata
     from fpdf import FPDF
+    from fpdf.enums import XPos, YPos
 
     def _s(text):
         """Normalize Unicode and strip chars not encodable in Latin-1."""
@@ -1721,34 +1761,46 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
         pdf.set_fill_color(30, 50, 80)
         pdf.set_text_color(255, 255, 255)
         pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(W, 8, f"  {_s(title)}", fill=True, ln=True)
+        pdf.set_x(pdf.l_margin)
+        pdf.cell(W, 8, f"  {_s(title)}", fill=True,
+                 new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.set_text_color(30, 30, 30)
         pdf.ln(3)
 
     def field_label(text):
         pdf.set_font("Helvetica", "B", 9)
         pdf.set_text_color(80, 80, 80)
+        pdf.set_x(pdf.l_margin)
         pdf.multi_cell(W, 5, _s(text))
         pdf.set_text_color(30, 30, 30)
 
     def body_text(text, italic=False):
         pdf.set_font("Helvetica", "I" if italic else "", 10)
         cleaned = _s(text).strip()
+        pdf.set_x(pdf.l_margin)
         pdf.multi_cell(W, 6, cleaned if cleaned else "(no response)")
         pdf.ln(2)
 
     # Title block
     pdf.set_font("Helvetica", "B", 18)
     pdf.set_text_color(20, 40, 80)
-    pdf.cell(W, 12, "SHIFT Cybersecurity Simulation", ln=True)
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(W, 12, "SHIFT Cybersecurity Simulation",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(80, 80, 80)
-    pdf.cell(W, 8, "Team Response Report", ln=True)
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(W, 8, "Team Response Report",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(2)
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(60, 60, 60)
-    pdf.cell(W, 6, f"Team: {_s(team_name)}", ln=True)
-    pdf.cell(W, 6, f"Submitted: {now.strftime('%B %d, %Y  %H:%M')}", ln=True)
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(W, 6, f"Team: {_s(team_name)}",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(W, 6, f"Submitted: {now.strftime('%B %d, %Y  %H:%M')}",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(4)
     pdf.set_draw_color(180, 180, 180)
     pdf.line(20, pdf.get_y(), 20 + W, pdf.get_y())
@@ -1762,11 +1814,13 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
             current_phase = entry["phase"]
             pdf.set_font("Helvetica", "B", 10)
             pdf.set_text_color(180, 80, 20)
+            pdf.set_x(pdf.l_margin)
             pdf.multi_cell(W, 7, _s(current_phase))
             pdf.set_text_color(30, 30, 30)
 
         pdf.set_font("Helvetica", "B", 10)
         pdf.set_text_color(20, 40, 80)
+        pdf.set_x(pdf.l_margin)
         pdf.multi_cell(W, 6, _s(entry["title"]))
         pdf.set_text_color(30, 30, 30)
 
@@ -1784,10 +1838,13 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
         for s in stations_data:
             pdf.set_font("Helvetica", "B", 10)
             pdf.set_text_color(20, 40, 80)
+            pdf.set_x(pdf.l_margin)
             pdf.multi_cell(W, 6, _s(s["title"]))
             pdf.set_font("Helvetica", "I", 9)
             pdf.set_text_color(100, 100, 100)
-            pdf.cell(W, 5, _s(s["phase"]), ln=True)
+            pdf.set_x(pdf.l_margin)
+            pdf.cell(W, 5, _s(s["phase"]),
+                     new_x=XPos.LMARGIN, new_y=YPos.NEXT)
             pdf.set_text_color(30, 30, 30)
             pdf.ln(1)
             prompts_by_key = {p["key"]: p["label"] for p in s["prompts"]}
@@ -1812,6 +1869,7 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
 
 
 def render_recovery():
+    _back_button(6)
     st.markdown('<h2 class="phase-header">Recovery Planning</h2>', unsafe_allow_html=True)
     st.caption("Hour 72+ — Complete your after-action summary")
 
@@ -1925,6 +1983,13 @@ def render_recovery():
 # ---------------------------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------------------------
+_SAVE_KEYS = [
+    "team_name", "team_role", "current_phase",
+    "decisions", "justifications", "log", "comms",
+    "stations_complete", "station_data", "station_checks",
+]
+
+
 def render_sidebar():
     with st.sidebar:
         st.markdown("## Team Response App")
@@ -1933,34 +1998,69 @@ def render_sidebar():
         if st.session_state.team_role != "Not Selected":
             st.markdown(f"**Role:** {st.session_state.team_role}")
 
+        # ---- Save / Load progress ----
         st.markdown("---")
-        st.markdown("### Phases")
-        phase_labels = {
-            0: "Setup", 1: "The Breach", 2: "Downtime",
-            3: "Break", 4: "Escalation", 5: "Critical Decisions", 6: "Recovery",
-        }
-        for i, label in phase_labels.items():
-            if i == st.session_state.current_phase:
-                st.markdown(f"**>> {label}**")
-            elif i <= st.session_state.current_phase:
-                if st.button(label, key=f"nav_{i}"):
+        st.markdown("### 💾 Save / Load Progress")
+
+        save_data = json.dumps(
+            {k: st.session_state.get(k) for k in _SAVE_KEYS if k in st.session_state},
+            default=str,
+        )
+        fname = f"SHIFT_{st.session_state.team_name or 'progress'}.json"
+        st.download_button(
+            "💾 Save Progress",
+            data=save_data,
+            file_name=fname,
+            mime="application/json",
+            use_container_width=True,
+            help="Download your progress as a JSON file you can reload later",
+        )
+
+        uploaded = st.file_uploader(
+            "📂 Load Saved Progress", type=["json"], key="progress_upload",
+            help="Upload a previously saved progress file",
+        )
+        if uploaded is not None:
+            file_id = f"{uploaded.name}_{uploaded.size}"
+            if st.session_state.get("_last_loaded") != file_id:
+                try:
+                    data = json.loads(uploaded.read())
+                    for k in _SAVE_KEYS:
+                        if k in data:
+                            st.session_state[k] = data[k]
+                    st.session_state["_last_loaded"] = file_id
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Could not load file: {e}")
+
+        # ---- Phase navigation ----
+        st.markdown("---")
+        st.markdown("### Navigate")
+        current = st.session_state.current_phase
+        for i, label in _PHASE_LABELS.items():
+            if i == current:
+                st.markdown(f"**▶ {label}**")
+            elif i < current:
+                if st.button(f"✓ {label}", key=f"nav_{i}", use_container_width=True):
                     st.session_state.current_phase = i
                     st.rerun()
             else:
-                st.markdown(f"*{label}*")
+                if st.button(label, key=f"nav_{i}", use_container_width=True):
+                    st.session_state.current_phase = i
+                    st.rerun()
 
+        # ---- Progress summary ----
         st.markdown("---")
-        st.markdown(f"**Decisions made:** {len(st.session_state.decisions)} / {len(DECISIONS)}")
+        st.markdown(f"**Decisions:** {len(st.session_state.decisions)} / {len(DECISIONS)}")
         stations_done = sum(1 for s in STATIONS if has_station_complete(s))
-        st.markdown(f"**Stations completed:** {stations_done} / {len(STATIONS)}")
+        st.markdown(f"**Stations:** {stations_done} / {len(STATIONS)}")
 
-        # Consequence summary
         good = sum(1 for did in st.session_state.decisions
-                    if DECISIONS[did]["options"][st.session_state.decisions[did]]["consequence_class"] == "good")
+                   if DECISIONS[did]["options"][st.session_state.decisions[did]]["consequence_class"] == "good")
         mixed = sum(1 for did in st.session_state.decisions
-                     if DECISIONS[did]["options"][st.session_state.decisions[did]]["consequence_class"] == "mixed")
+                    if DECISIONS[did]["options"][st.session_state.decisions[did]]["consequence_class"] == "mixed")
         bad = sum(1 for did in st.session_state.decisions
-                   if DECISIONS[did]["options"][st.session_state.decisions[did]]["consequence_class"] == "bad")
+                  if DECISIONS[did]["options"][st.session_state.decisions[did]]["consequence_class"] == "bad")
         if st.session_state.decisions:
             st.markdown("### Outcome Summary")
             st.markdown(f"- Favorable: **{good}**")
@@ -1968,7 +2068,7 @@ def render_sidebar():
             st.markdown(f"- Unfavorable: **{bad}**")
 
         st.markdown("---")
-        if st.button("Reset All", type="secondary"):
+        if st.button("Reset All", type="secondary", use_container_width=True):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
