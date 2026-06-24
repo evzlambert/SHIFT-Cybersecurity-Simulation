@@ -497,59 +497,61 @@ DECISIONS = {
         ],
     },
 
-    "p2_paper": {
+    "p2_hie": {
         "phase": "Phase 2: Downtime",
-        "title": "Paper Records Management",
-        "question": "3,200 pages of paper records, 11% unmatched. What is your strategy?",
+        "title": "HIE Network Isolation",
+        "question": "Anomalous outbound data from your HIE node is affecting two partner hospitals. Do you request isolation from the regional exchange network?",
         "options": [
             {
-                "text": "Centralized staging area with HIM staff organizing and auditing in real-time",
+                "text": "Request immediate full isolation — disconnect now, restore when clean",
                 "consequence_text": (
-                    "The staging area brings order to chaos. HIM staff catch missing identifiers "
-                    "and send forms back to units for completion within hours, not days. Record "
-                    "matchability improves to 96%. However, this requires 4 HIM staff working "
-                    "continuously — staff who would normally be doing other work. Coding and "
-                    "billing functions are completely halted."
+                    "The Regional Health Authority isolates Sainte-Claire's HIE node within "
+                    "30 minutes. The spread to partner hospitals is contained. However, "
+                    "clinicians immediately lose automatic medication reconciliation for "
+                    "transferred patients. ED physicians must call partner hospitals directly "
+                    "for records. Discharge summaries require manual fax. A patient transfer "
+                    "to CHU de Grenoble is delayed 40 minutes while staff locate a fax number."
                 ),
                 "consequence_class": "good",
-                "ripple": "Your centralized approach means data quality is high. Back-entry will be smoother, but your revenue cycle team has been idle for 2 days — the billing backlog is growing.",
+                "ripple": "HIE isolation contained the spread. When GDPR scope is assessed, partner hospital data may still be in scope — isolation doesn't undo prior exposure. But you stopped it from getting worse.",
             },
             {
-                "text": "Prioritize critical documentation only — defer progress notes",
+                "text": "Request monitoring only — maintain connection while forensics assess the scope",
                 "consequence_text": (
-                    "Medication records and allergy documentation are prioritized and well-maintained. "
-                    "Progress notes are deferred, creating clinical continuity gaps. When a "
-                    "consulting physician sees a patient on Day 2, they have no written record "
-                    "of the primary team's assessment from Day 1. They must rely entirely on "
-                    "verbal updates, increasing the chance of miscommunication."
-                ),
-                "consequence_class": "mixed",
-                "ripple": "Deferred progress notes mean clinical reasoning is not documented. If any adverse event is later reviewed, there will be gaps in the medical record.",
-            },
-            {
-                "text": "Deploy HIM staff as embedded scribes on each unit",
-                "consequence_text": (
-                    "Embedded scribes dramatically improve documentation quality. Nurses are "
-                    "relieved of much of the paper burden. Record completeness reaches 92%. "
-                    "However, HIM staff are not clinical — they sometimes record information "
-                    "incorrectly because they don't understand the clinical context. Three "
-                    "records have medication doses documented incorrectly (caught during "
-                    "pharmacy review)."
-                ),
-                "consequence_class": "mixed",
-                "ripple": "The scribe model worked well for completeness but introduced transcription errors. Pharmacy caught them, but it raises questions about using non-clinical staff for clinical documentation.",
-            },
-            {
-                "text": "Photograph paper records with a dedicated hospital camera for digital backup",
-                "consequence_text": (
-                    "Photos provide a backup, reducing the risk of lost records. However, your "
-                    "Communications & Compliance Officer raises an urgent concern: the photos "
-                    "create a secondary data store of patient health information on an "
-                    "unsecured device. Under GDPR, this requires the same protections as the "
-                    "EHR. The camera's SD card is now a data protection liability."
+                    "The HIE connection remains active. Forensics later confirm that compromised "
+                    "credentials continued to exfiltrate data via the HIE for 6 additional hours. "
+                    "CHU de Grenoble reports patient demographic data has been accessed. Your "
+                    "GDPR notification scope must now include partner hospital patient records — "
+                    "potentially adding 12,000 additional data subjects. Legal counsel is alarmed."
                 ),
                 "consequence_class": "bad",
-                "ripple": "You now have patient data on an SD card. If the CNIL asks about data handling during the breach, this will need to be disclosed. It may complicate your GDPR notification.",
+                "ripple": "Monitoring-only allowed the breach to expand. Your CNIL filing now covers a significantly larger population, and two partner hospitals are filing their own GDPR notifications citing Sainte-Claire as the origin.",
+            },
+            {
+                "text": "Isolate outbound connections only — maintain read access to incoming HIE data",
+                "consequence_text": (
+                    "Partial isolation reduces exfiltration risk while preserving your ability "
+                    "to query partner hospital records for active patients. ANSSI considers this "
+                    "an acceptable interim measure. However, the technical implementation takes "
+                    "90 minutes longer than full isolation — during which outbound transfer "
+                    "continues at reduced volume. One partner hospital implements its own "
+                    "isolation as a precaution, severing your read access anyway."
+                ),
+                "consequence_class": "mixed",
+                "ripple": "The hybrid isolation was technically sound but took too long to implement. One partner hospital's unilateral isolation means you lost the read access you were trying to preserve.",
+            },
+            {
+                "text": "Escalate to ANSSI before deciding — wait for their formal guidance",
+                "consequence_text": (
+                    "ANSSI responds within 2 hours with a formal recommendation to isolate "
+                    "immediately. During the wait, forensics confirm active exfiltration via "
+                    "the HIE. ANSSI's written guidance is valuable for your documentation, "
+                    "but the delay allowed 2 more hours of potential partner data exposure. "
+                    "The Regional Health Authority notes that Sainte-Claire delayed isolation "
+                    "despite anomaly alerts."
+                ),
+                "consequence_class": "mixed",
+                "ripple": "You have formal ANSSI documentation supporting your eventual decision, but the delay will be scrutinized in the post-incident review.",
             },
         ],
     },
@@ -780,58 +782,56 @@ DECISIONS = {
         ],
     },
 
-    "p4_conflict": {
+    "p4_gdhp": {
         "phase": "Phase 4: Escalation",
-        "title": "Surgery vs. HIM Conflict",
-        "question": "Resume elective surgery on paper or wait? The Chief of Surgery and HIM Director disagree.",
+        "title": "WHO GDHP Incident Report",
+        "question": "The WHO Global Digital Health Partnership cybersecurity workstream has requested member organizations report significant ransomware incidents. Your national authority has forwarded the request. How do you respond?",
         "options": [
             {
-                "text": "Resume elective cases with enhanced manual safety protocols and a surgical safety officer in each OR",
+                "text": "File a report immediately — in parallel with the CNIL notification",
                 "consequence_text": (
-                    "Surgery resumes with dedicated safety officers. Over 2 days, 15 elective "
-                    "cases are completed without incident. The surgical safety officer catches "
-                    "2 potential specimen labeling errors before they happen. The HIM Director "
-                    "is not happy but acknowledges the safety officer model works. The cost: "
-                    "4 HIM staff redeployed to the OR, reducing paper records management capacity."
+                    "The GDHP report is filed within 4 hours of the request. WHO acknowledges "
+                    "receipt and assigns your incident to their healthcare ransomware tracker. "
+                    "Your data contributes to a regional pattern analysis that helps three other "
+                    "European hospital networks identify early warning signs. Legal counsel notes "
+                    "the report is voluntary and creates no additional liability."
                 ),
                 "consequence_class": "good",
-                "ripple": "Elective surgery is back, reducing patient backlog and revenue loss. But your HIM team is now split between OR safety and records management.",
+                "ripple": "Your proactive GDHP filing establishes a record of responsible global engagement. The WHO cybersecurity workstream contacts your institution for a post-incident case study contribution.",
             },
             {
-                "text": "Delay elective surgery until basic electronic safety systems are restored",
+                "text": "Sequence the GDHP report after the CNIL notification is complete",
                 "consequence_text": (
-                    "The Chief of Surgery is furious. Two patients with conditions worsening "
-                    "from delay must be transferred to partner hospitals for their procedures. "
-                    "The surgical team feels overruled and morale drops. However, no surgical "
-                    "safety events occur. The wait for system restoration adds pressure to the "
-                    "IT recovery timeline — 'We need the surgical module first.'"
+                    "You file the GDHP report 3 days after the CNIL notification. WHO acknowledges "
+                    "the delay was reasonable given the active incident. The report is less complete "
+                    "than an immediate filing — some early timeline data is imprecise. The sequenced "
+                    "approach is viewed as responsible, if conservative."
                 ),
                 "consequence_class": "mixed",
-                "ripple": "The surgical backlog is growing. Revenue from surgical services (a major income stream) is halted. The board will ask about this decision.",
+                "ripple": "Your GDHP report is filed but captures a post-acute snapshot. Some early-incident intelligence that would have been valuable to WHO's real-time tracking was not captured.",
             },
             {
-                "text": "Compromise: low-risk, short-duration cases only with HIM staff in OR; defer complex cases",
+                "text": "Defer the report to the recovery phase — too many competing priorities now",
                 "consequence_text": (
-                    "The compromise satisfies neither party fully but both accept it. 8 "
-                    "low-risk cases proceed over 2 days. Complex cases (including the bowel "
-                    "obstruction follow-up) are deferred. The Chief of Surgery grumbles but "
-                    "cooperates. The HIM Director accepts the limited scope. Staff see "
-                    "leadership finding middle ground, which helps morale."
+                    "No report is filed during the incident. In Week 3, the GDHP sends a "
+                    "reminder. A brief report is eventually filed but covers only the resolved "
+                    "incident rather than real-time observations. The WHO regional coordinator "
+                    "notes Sainte-Claire's late filing in a regional incident summary."
                 ),
-                "consequence_class": "good",
-                "ripple": "The compromise is seen as reasonable by most staff. The governance precedent — clinical and HIM voices both heard — will serve you well in recovery planning.",
+                "consequence_class": "mixed",
+                "ripple": "The deferral was understandable but weakened the real-time intelligence value. WHO notes the gap in the regional incident timeline.",
             },
             {
-                "text": "Emergency clinical governance meeting with surgery, HIM, nursing, and anesthesia",
+                "text": "Decline the request — this is voluntary and we have no bandwidth",
                 "consequence_text": (
-                    "The governance meeting takes 90 minutes — time that could have been spent "
-                    "on patient care. However, the collaborative process produces a detailed "
-                    "protocol that all parties endorse. Surgery resumes for cases meeting "
-                    "specific criteria. The protocol is documented and could serve as a model "
-                    "for future downtime situations. Leadership is perceived as inclusive."
+                    "No report is filed. The GDHP adds Sainte-Claire to a list of non-reporting "
+                    "incidents for the region. In a subsequent WHO briefing on European healthcare "
+                    "cybersecurity, Sainte-Claire appears as one of several 'data gaps' in the "
+                    "regional pattern analysis. The national health authority asks for an "
+                    "explanation at the next quarterly review."
                 ),
-                "consequence_class": "good",
-                "ripple": "The governance meeting produced a strong protocol but consumed leadership time. The protocol document will be valuable for the hospital's future preparedness planning.",
+                "consequence_class": "bad",
+                "ripple": "The non-participation is noted at national and international levels. When Sainte-Claire seeks WHO Academy recognition for its digital health programs, the gap in incident reporting surfaces as a concern.",
             },
         ],
     },
@@ -1190,6 +1190,52 @@ STATIONS = {
         ],
     },
 
+    "s2_literacy": {
+        "phase": "Phase 2: Downtime",
+        "title": "ACTION STATION: Draft the Patient Notification Advisory",
+        "time_minutes": 8,
+        "scenario": (
+            "The Communications Officer has been tasked with drafting the first patient-facing "
+            "advisory about the breach. Your instructor will direct Communications Officers to "
+            "work on this while other team members continue with artifact stations.\n\n"
+            "Sainte-Claire's catchment includes 40,000 patients with low health literacy and "
+            "22,000 primary speakers of Arabic, Turkish, or Dari. This advisory must meet WHO "
+            "plain language standards: 6th–8th grade reading level, clear structure, no medical "
+            "jargon, and cultural accessibility for diverse populations."
+        ),
+        "physical_task": (
+            "Write your first draft on paper. Read it aloud — does every sentence make sense "
+            "without medical training? Then bring your draft to another team's table for "
+            "plain language peer review. Record the feedback you receive below when you return. "
+            "Your final revised version is due at the end of Phase 4."
+        ),
+        "materials": ["Paper", "Pen"],
+        "capture_prompts": [
+            {"key": "draft_text",
+             "label": "Your first draft (patient notification advisory):",
+             "type": "text_area", "height": 200,
+             "placeholder": "Dear patients and families of Centre Hospitalier Sainte-Claire,\n\nWe are writing to inform you...\n\n[Write the full advisory here. Use plain language — no medical jargon. Include: what happened, what it means for patients, what the hospital is doing, what patients should do, and how to get more information.]"},
+            {"key": "audience_notes",
+             "label": "How did you address the diverse literacy and language audience?",
+             "type": "text_area", "height": 80,
+             "placeholder": "e.g., Avoided medical jargon, short sentences, noted need for Arabic/Turkish/Dari translation, large-print option..."},
+            {"key": "peer_feedback",
+             "label": "Feedback from the peer review team (record when you return):",
+             "type": "text_area", "height": 80,
+             "placeholder": "After peer review, record what the other team flagged — unclear terms, missing information, tone issues..."},
+        ],
+        "quality_checks": [
+            "Opening acknowledges the situation directly and honestly",
+            "Written at 6th–8th grade level (no medical terminology)",
+            "Clear structure: what happened / what it means / what we're doing / what you should do",
+            "Specific contact information for questions",
+            "No false reassurances or over-promises",
+            "Channel equity addressed (not just website — phone, in-person options)",
+            "Sensitive population considerations noted (vulnerable patients, domestic violence survivors)",
+            "Translation need acknowledged",
+        ],
+    },
+
     # ===== PHASE 4 =====
     "s4_press": {
         "phase": "Phase 4: Escalation",
@@ -1252,6 +1298,47 @@ STATIONS = {
             "Does NOT over-promise on timeline",
             "Readable by non-medical audience",
             "Available in multiple languages (noted if not provided)",
+        ],
+    },
+
+    "s4_literacy_final": {
+        "phase": "Phase 4: Escalation",
+        "title": "ACTION STATION: Finalize the Patient Notification Advisory",
+        "time_minutes": 6,
+        "scenario": (
+            "The patient notification draft from Phase 2 has been through peer review. "
+            "The CNIL expects this advisory to accompany the breach notification. "
+            "It will reach 180,000 patients and be posted in the hospital in multiple "
+            "languages. This is the final version — the one that will be published."
+        ),
+        "physical_task": (
+            "Incorporate the peer feedback you received. Revise your draft on paper, "
+            "then enter the final version below. Be ready to explain what changed and why."
+        ),
+        "materials": ["Your Phase 2 draft", "Peer feedback notes", "Paper", "Pen"],
+        "capture_prompts": [
+            {"key": "final_text",
+             "label": "Your final patient notification advisory:",
+             "type": "text_area", "height": 220,
+             "placeholder": "Dear patients and families of Centre Hospitalier Sainte-Claire,\n\n[Enter your final, revised advisory here]"},
+            {"key": "changes_made",
+             "label": "What changed from your first draft and why?",
+             "type": "text_area", "height": 80,
+             "placeholder": "e.g., Replaced 'ransomware' with 'a cyberattack on our computer systems'; simplified the notification process section; added Braille/large print note..."},
+            {"key": "channel_plan",
+             "label": "How will this advisory reach all affected patients equitably?",
+             "type": "text_area", "height": 80,
+             "placeholder": "e.g., Mailed letter, hospital notice boards, Arabic/Turkish/Dari telephone lines, in-person patient liaison for admitted patients..."},
+        ],
+        "quality_checks": [
+            "Incorporates feedback from Phase 2 peer review",
+            "All changes are improvements (not just cosmetic)",
+            "Channel plan reaches low-literacy AND non-French-speaking patients",
+            "Sensitive data categories (mental health, HIV) handled with particular care",
+            "Plain language verified: readable without medical background",
+            "WHO plain language standards reflected",
+            "Domestic violence and vulnerable patient risks addressed",
+            "Distribution timeline specified",
         ],
     },
 
@@ -1339,50 +1426,163 @@ STATIONS = {
         ],
     },
 
-    # ===== PHASE 6 =====
-    "s6_backentry": {
-        "phase": "Phase 6: Recovery",
-        "title": "ACTION STATION: Design the Back-Entry Workflow",
+    "s5_bcp": {
+        "phase": "Phase 5: Critical Decisions",
+        "title": "ACTION STATION: Begin the Business Continuity Plan",
         "time_minutes": 8,
         "scenario": (
-            "Systems are coming back online. You now face 6,400+ pages of paper records "
-            "that must be entered into the EHR. 11% can't be matched to a patient. "
-            "34% are missing date of birth. 18% are partially illegible. "
-            "This will take weeks and cost tens of thousands of euros. "
-            "Design the process."
+            "A ransomware event of this scale requires a documented Business Continuity Plan — "
+            "not just for recovery, but as an institutional record of what happened and what "
+            "was decided. Your BCP will be reviewed by the board, CNIL, and the Regional "
+            "Health Authority. It must be honest, specific, and forward-looking.\n\n"
+            "Complete three of five sections now. The final two sections are completed in "
+            "Phase 6."
         ),
         "physical_task": (
-            "On paper, map out the back-entry workflow from start to finish. "
-            "Who does the entry? How do you prioritize? What quality checks exist? "
-            "How do you handle the 11% unmatched records? Draw a flowchart or write "
-            "numbered steps. Then log your design below."
+            "On paper, begin your BCP document. Use the three section prompts below as "
+            "your structure. You will not finish everything in 8 minutes — that is the point. "
+            "Log your progress below, noting what is complete, estimated, or still unknown."
         ),
-        "materials": ["Large paper or whiteboard", "Markers"],
+        "materials": ["Paper", "Pen"],
         "capture_prompts": [
-            {"key": "priority_order", "label": "Priority order for back-entry (what gets entered first and why):",
+            {"key": "incident_record",
+             "label": "Section 1 — Incident Containment Record (what happened, when, how contained):",
+             "type": "text_area", "height": 140,
+             "placeholder": "Monday 06:12: LockBit 3.0 ransomware detected\nMonday 06:45: Network isolation completed\nMonday 08:30: ANSSI notified\nHour 14: HIE anomaly detected, [isolation decision]\n[Continue timeline]"},
+            {"key": "downtime_log",
+             "label": "Section 2 — Downtime Operations Summary (key decisions, outcomes, data gaps):",
              "type": "text_area", "height": 120,
-             "placeholder": "1. Active inpatient medications (patient safety)\n2. Lab results pending action\n3. Surgical/procedure notes\n4. ..."},
-            {"key": "workflow_steps", "label": "Back-entry workflow steps (from paper to EHR):",
-             "type": "text_area", "height": 150,
-             "placeholder": "Step 1: Sort paper records by unit and date\nStep 2: Match to patient using [identifiers]\nStep 3: ...\nStep 4: QA check by...\nStep 5: ..."},
-            {"key": "qa_process", "label": "Quality assurance: How do you verify accuracy of back-entered data?",
-             "type": "text_area", "height": 80,
-             "placeholder": "e.g., Second-person verification, spot audits of 10%, pharmacist review of medication entries..."},
-            {"key": "unmatched_plan", "label": "The 11% problem: How do you handle records that can't be matched to a patient?",
-             "type": "text_area", "height": 80,
-             "placeholder": ""},
-            {"key": "staffing", "label": "Staffing plan: Who does this work? How long will it take?",
-             "type": "text_area", "height": 80, "placeholder": ""},
+             "placeholder": "Patient safety decisions: [list]\nClinical near-misses: [describe]\nData integrity gaps identified: [describe]\nStaff issues encountered: [describe]"},
+            {"key": "recovery_sequence",
+             "label": "Section 3 — Recovery Sequencing Priorities (what gets restored first and why):",
+             "type": "text_area", "height": 100,
+             "placeholder": "Priority 1: [system] — clinical reason: [reason]\nPriority 2: [system] — reason: [reason]\n[Continue]"},
         ],
         "quality_checks": [
-            "Priority based on patient safety (not convenience)",
-            "Clear workflow with defined steps",
-            "QA/verification process at each stage",
-            "Plan for unmatched records (not just 'discard')",
-            "Staffing plan (who, how many, how long)",
-            "Error handling (what if back-entry creates a conflict?)",
-            "Timeline estimate",
-            "Cost estimate considered",
+            "Incident timeline is accurate and specific (times, not approximations)",
+            "Containment steps documented in sequence",
+            "Clinical impact honestly recorded (near-misses included)",
+            "Data integrity gaps acknowledged — not minimized",
+            "Recovery sequence reflects patient safety first",
+            "Financial impact estimates included or noted as pending",
+            "Accountable party named for each section",
+        ],
+    },
+
+    # ===== PHASE 6 =====
+    "s6_gdhp": {
+        "phase": "Phase 6: Recovery",
+        "title": "ACTION STATION: GDHP Cybersecurity Maturity Assessment",
+        "time_minutes": 12,
+        "scenario": (
+            "The WHO Global Digital Health Partnership cybersecurity workstream uses a "
+            "maturity framework to assess institutional preparedness across six dimensions. "
+            "Based on everything you have just experienced, rate Centre Hospitalier "
+            "Sainte-Claire on each dimension.\n\n"
+            "1 = Not present  |  2 = Early stage  |  3 = Developing  |  4 = Established  |  5 = Exemplary\n\n"
+            "Rate honestly — based on what you experienced in the simulation, not what the "
+            "hospital wished it had."
+        ),
+        "physical_task": (
+            "Use the sliders below to rate each of the six GDHP dimensions. For each rating, "
+            "write one sentence justifying your score based on specific evidence from the "
+            "simulation. Your team should reach consensus — if you disagree, record the "
+            "reasoning on both sides."
+        ),
+        "materials": ["(App-based rating — no physical materials)"],
+        "capture_prompts": [
+            {"key": "dim1_score",
+             "label": "Dimension 1 — Governance Accountability & Leadership (1–5):",
+             "type": "slider"},
+            {"key": "dim1_just",
+             "label": "Justification for Dimension 1:",
+             "type": "text_area", "height": 65,
+             "placeholder": "e.g., DPO not notified until Hour 20; incident command unclear in early Phase 1..."},
+            {"key": "dim2_score",
+             "label": "Dimension 2 — Incident Detection & Response Protocols (1–5):",
+             "type": "slider"},
+            {"key": "dim2_just",
+             "label": "Justification for Dimension 2:",
+             "type": "text_area", "height": 65,
+             "placeholder": "e.g., 11-day dwell time before detection; response protocols had to be improvised..."},
+            {"key": "dim3_score",
+             "label": "Dimension 3 — Data Recovery & Resilience (1–5):",
+             "type": "slider"},
+            {"key": "dim3_just",
+             "label": "Justification for Dimension 3:",
+             "type": "text_area", "height": 65,
+             "placeholder": "e.g., Clean backup was a strength; 11% unmatched records indicate poor data governance..."},
+            {"key": "dim4_score",
+             "label": "Dimension 4 — Staff Training & Awareness Culture (1–5):",
+             "type": "slider"},
+            {"key": "dim4_just",
+             "label": "Justification for Dimension 4:",
+             "type": "text_area", "height": 65,
+             "placeholder": "e.g., Staff didn't know where downtime forms were stored; WhatsApp breach suggests poor awareness..."},
+            {"key": "dim5_score",
+             "label": "Dimension 5 — Digital Trust Architecture & Data Governance (1–5):",
+             "type": "slider"},
+            {"key": "dim5_just",
+             "label": "Justification for Dimension 5:",
+             "type": "text_area", "height": 65,
+             "placeholder": "e.g., HIE created regional vulnerability; orphaned records indicate systemic data governance gaps..."},
+            {"key": "dim6_score",
+             "label": "Dimension 6 — Business Continuity Planning (1–5):",
+             "type": "slider"},
+            {"key": "dim6_just",
+             "label": "Justification for Dimension 6:",
+             "type": "text_area", "height": 65,
+             "placeholder": "e.g., BCP was developed during the incident rather than before it..."},
+            {"key": "urgent_gap",
+             "label": "Overall: What is Sainte-Claire's single most urgent preparedness gap?",
+             "type": "text_area", "height": 90,
+             "placeholder": "In 2–3 sentences, identify the dimension that most urgently needs improvement and explain why based on specific simulation events."},
+        ],
+        "quality_checks": [
+            "All six dimensions rated",
+            "Each rating has a specific justification (not just 'high' or 'low')",
+            "Justifications reference specific simulation events",
+            "Team reached consensus (or documented disagreement)",
+            "Overall gap is specific and actionable",
+            "Ratings reflect actual simulation experience, not aspirational state",
+        ],
+    },
+
+    "s6_bcp_complete": {
+        "phase": "Phase 6: Recovery",
+        "title": "ACTION STATION: Complete the Business Continuity Plan",
+        "time_minutes": 5,
+        "scenario": (
+            "Complete the final two sections of your Business Continuity Plan. "
+            "These sections establish the path from crisis operations back to normal, "
+            "and commit your institution to responsible data governance obligations "
+            "that go beyond what the law requires."
+        ),
+        "physical_task": (
+            "Write the final two sections below. The governance declaration is the most "
+            "important document you will produce today — it commits your institution to "
+            "specific patient obligations grounded in WHO data principles."
+        ),
+        "materials": ["Your Phase 5 BCP draft", "Paper", "Pen"],
+        "capture_prompts": [
+            {"key": "backentry_priority",
+             "label": "Section 4 — Back-Entry Prioritization (which paper records first and why):",
+             "type": "text_area", "height": 140,
+             "placeholder": "Priority 1: Active inpatient medications — clinical safety\nPriority 2: Surgical/procedure records — liability and continuity\nPriority 3: Lab results with pending clinical decisions\n[Include: who does the work, QA process, timeline estimate]"},
+            {"key": "governance_declaration",
+             "label": "Section 5 — Responsible Data Governance Declaration:",
+             "type": "text_area", "height": 160,
+             "placeholder": "Beyond what GDPR requires, Centre Hospitalier Sainte-Claire commits to:\n\n1. Transparency: [specific commitment]\n2. Patient dignity: [especially for mental health and HIV data]\n3. Equitable notification: [reaching vulnerable, low-literacy, non-French-speaking patients]\n4. Long-term support: [what you will offer patients whose sensitive data was exposed]\n\nWHO data principles referenced: [list principles]"},
+        ],
+        "quality_checks": [
+            "Back-entry priority based on clinical safety (not convenience or revenue)",
+            "QA process for back-entry specified",
+            "Timeline estimate included",
+            "Governance declaration goes beyond minimum legal compliance",
+            "Specific commitments for vulnerable populations (mental health, HIV, DV survivors)",
+            "WHO data principles explicitly referenced",
+            "Accountability named for each commitment",
+            "Governance declaration is readable to non-medical audience",
         ],
     },
 }
@@ -1404,8 +1604,9 @@ PHASE_FLOW = {
         ("decision", "p2_diversion"),
         ("decision", "p2_handoff"),
         ("station", "s2_handoff"),
-        ("decision", "p2_paper"),
         ("station", "s2_paper_record"),
+        ("decision", "p2_hie"),
+        ("station", "s2_literacy"),
     ],
     4: [
         ("decision", "p4_media"),
@@ -1414,7 +1615,8 @@ PHASE_FLOW = {
         ("station", "s4_family_letter"),
         ("decision", "p4_staff"),
         ("decision", "p4_social"),
-        ("decision", "p4_conflict"),
+        ("decision", "p4_gdhp"),
+        ("station", "s4_literacy_final"),
     ],
     5: [
         ("decision", "p5_ransom"),
@@ -1422,6 +1624,7 @@ PHASE_FLOW = {
         ("decision", "p5_gdpr"),
         ("station", "s5_cnil"),
         ("decision", "p5_restore"),
+        ("station", "s5_bcp"),
     ],
 }
 
@@ -1435,6 +1638,7 @@ _AUTO_SAVE_KEYS = [
     "team_name", "team_role", "current_phase",
     "decisions", "justifications", "log", "comms",
     "stations_complete", "station_data", "station_checks",
+    "phase3_ic_brief", "phase3_card_intel", "phase3_ic_exchange",
 ]
 
 def _auto_save():
@@ -1594,13 +1798,22 @@ def render_station(station_id):
         st.markdown("---")
         st.markdown("#### Log Your Work")
         for prompt in s["capture_prompts"]:
-            val = st.text_area(
-                prompt["label"],
-                key=f"station_{station_id}_{prompt['key']}",
-                height=prompt.get("height", 100),
-                placeholder=prompt.get("placeholder", ""),
-            )
-            field_values[prompt["key"]] = val
+            ptype = prompt.get("type", "text_area")
+            if ptype == "slider":
+                val = st.slider(
+                    prompt["label"],
+                    min_value=1, max_value=5, value=3,
+                    key=f"station_{station_id}_{prompt['key']}",
+                )
+                field_values[prompt["key"]] = str(val)
+            else:
+                val = st.text_area(
+                    prompt["label"],
+                    key=f"station_{station_id}_{prompt['key']}",
+                    height=prompt.get("height", 100),
+                    placeholder=prompt.get("placeholder", ""),
+                )
+                field_values[prompt["key"]] = val
 
     # Has at least one capture field filled (or no fields required)?
     any_filled = not s["capture_prompts"] or any(v.strip() for v in field_values.values())
@@ -1631,8 +1844,8 @@ def render_station(station_id):
 # ---------------------------------------------------------------------------
 PHASE_DECISIONS = {
     1: ["p1_priority", "p1_communication", "p1_safety"],
-    2: ["p2_medication", "p2_diversion", "p2_handoff", "p2_paper"],
-    4: ["p4_media", "p4_family", "p4_staff", "p4_social", "p4_conflict"],
+    2: ["p2_medication", "p2_diversion", "p2_handoff", "p2_hie"],
+    4: ["p4_media", "p4_family", "p4_staff", "p4_social", "p4_gdhp"],
     5: ["p5_ransom", "p5_gdpr", "p5_restore"],
 }
 
@@ -1654,7 +1867,7 @@ def render_setup():
 
 _PHASE_PREV = {1: 0, 2: 1, 4: 3, 5: 4, 6: 5}
 _PHASE_LABELS = {0: "Setup", 1: "The Breach", 2: "Downtime",
-                 3: "Break", 4: "Escalation", 5: "Critical Decisions", 6: "Recovery"}
+                 3: "Regional Briefing + Break", 4: "Escalation", 5: "Critical Decisions", 6: "Recovery"}
 
 
 def _back_button(phase_num):
@@ -1747,11 +1960,47 @@ def render_decision_phase(phase_num, title, subtitle):
 
 def render_break():
     _back_button(3)
-    st.markdown("## Break Time")
-    st.markdown("Review your decisions and consequences so far.")
+    st.markdown('<h2 class="phase-header">Phase 3: Regional Briefing — then Break</h2>',
+                unsafe_allow_html=True)
+    st.caption("Hour 20 — All Incident Commanders at the ICC | Everyone else reviews Phase 2 decisions")
+
+    st.markdown(
+        '<div class="station-banner">'
+        '<h3>ICC Regional Briefing in Progress</h3>'
+        '<div class="station-time">~15 MINUTES</div>'
+        '<p>Incident Commanders have been called to the second-floor Incident Command Center '
+        'for a joint Regional Health Authority briefing. They will return with team-specific '
+        'intelligence. While they are away, review your Phase 2 decisions below.</p>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("📋 IC Brief — Record what you learned at the ICC (Incident Commander fills this)", expanded=False):
+        st.text_area(
+            "What did the Regional Health Authority brief you on?",
+            key="phase3_ic_brief",
+            height=100,
+            placeholder="e.g., HIE spread confirmed at two partner hospitals; GDPR clock at Hour 20 — 52 hours remaining; ANSSI recommends against ransom payment; Le Monde has contacted the Regional Authority...",
+        )
+        st.text_area(
+            "What was on your team-specific Regional Briefing Card?",
+            key="phase3_card_intel",
+            height=80,
+            placeholder="e.g., The DPO has not yet been formally notified (Card 3A); Clean backup confirmed from 48 hours prior (Card 3B); ...",
+        )
+        st.text_area(
+            "What did other ICs share during the 2-minute IC exchange?",
+            key="phase3_ic_exchange",
+            height=80,
+            placeholder="e.g., Team B IC shared that they have a clean backup; Team C IC mentioned media is already outside...",
+        )
+
+    st.markdown("---")
+    st.markdown("### Review: Phase 1 & 2 Decisions and Consequences")
+    st.caption("While your IC is at the ICC, use this time to evaluate what you would change.")
 
     for phase_num in [1, 2]:
-        st.markdown(f"### Phase {phase_num} Decisions")
+        st.markdown(f"**Phase {phase_num} Decisions**")
         for did in PHASE_DECISIONS.get(phase_num, []):
             if has_decided(did):
                 d = DECISIONS[did]
@@ -1761,8 +2010,9 @@ def render_break():
         st.markdown("---")
 
     st.markdown(f"**Decisions logged:** {len(st.session_state.log)}")
+    st.info("When your IC has returned and briefed the team, take a 20-minute break. Then click Resume.")
 
-    if st.button("Resume", type="primary", use_container_width=True):
+    if st.button("Resume — Phase 4", type="primary", use_container_width=True):
         st.session_state.current_phase = 4
         st.rerun()
 
@@ -1788,6 +2038,7 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
         "3. Which role had the most difficult job? Why?",
         "4. What is one thing about cybersecurity in healthcare you didn't appreciate before?",
         "5. Your top 3 recommendations for hospital cybersecurity preparedness:",
+        "6. Based on your GDHP maturity assessment, which ONE dimension should Sainte-Claire address first before its next digital health initiative — and why?",
     ]
 
     pdf = FPDF(orientation="P", unit="mm", format="A4")
@@ -1911,13 +2162,64 @@ def _generate_pdf(team_name, now, decisions_data, stations_data, after_action):
 def render_recovery():
     _back_button(6)
     st.markdown('<h2 class="phase-header">Recovery Planning</h2>', unsafe_allow_html=True)
-    st.caption("Hour 72+ — Complete your after-action summary")
+    st.caption("Hour 72+ — GDHP maturity assessment, Business Continuity Plan completion, after-action summary")
 
-    # Back-entry workflow station
+    # ── 6A: GDHP Maturity Assessment ──────────────────────────────────────────
     st.markdown("---")
-    render_station("s6_backentry")
+    st.markdown("### 6A — GDHP Cybersecurity Maturity Assessment")
+    render_station("s6_gdhp")
 
-    # Show all consequences
+    # Radar chart once the GDHP station is complete
+    if has_station_complete("s6_gdhp"):
+        try:
+            import plotly.graph_objects as go
+            data = st.session_state.station_data.get("s6_gdhp", {})
+            dim_labels = [
+                "Governance & Leadership",
+                "Incident Detection",
+                "Data Recovery",
+                "Staff Training & Awareness",
+                "Digital Trust & Data Governance",
+                "Business Continuity",
+            ]
+            dim_keys = ["dim1_score", "dim2_score", "dim3_score",
+                        "dim4_score", "dim5_score", "dim6_score"]
+            scores = []
+            for k in dim_keys:
+                try:
+                    scores.append(int(data.get(k, "3")))
+                except (ValueError, TypeError):
+                    scores.append(3)
+            # close polygon
+            fig = go.Figure(data=go.Scatterpolar(
+                r=scores + [scores[0]],
+                theta=dim_labels + [dim_labels[0]],
+                fill="toself",
+                line_color="#ff4b4b",
+                fillcolor="rgba(255,75,75,0.15)",
+                name="Sainte-Claire",
+            ))
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 5],
+                                   tickvals=[1, 2, 3, 4, 5]),
+                ),
+                showlegend=False,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                title=dict(text="WHO/GDHP Maturity Profile — Centre Hospitalier Sainte-Claire",
+                           font=dict(color="#ffffff")),
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        except Exception:
+            pass  # chart is bonus visualization — never break the app
+
+    # ── 6B: BCP Completion ────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("### 6B — Business Continuity Plan: Final Sections")
+    render_station("s6_bcp_complete")
+
+    # ── Full timeline & deliverables ─────────────────────────────────────────
     with st.expander("Full Decision & Consequence Timeline", expanded=False):
         for phase_num in [1, 2, 4, 5]:
             st.markdown(f"### Phase {phase_num}")
@@ -1925,7 +2227,6 @@ def render_recovery():
                 render_consequence(did)
                 st.markdown("---")
 
-    # Show all station deliverables
     completed_stations = [sid for sid in STATIONS if has_station_complete(sid)]
     if completed_stations:
         with st.expander("All Station Deliverables", expanded=False):
@@ -1969,11 +2270,16 @@ def render_recovery():
                   key="aa4", height=100)
     st.text_area("5. Your top 3 recommendations for hospital cybersecurity preparedness:",
                   key="aa5", height=100)
+    st.text_area(
+        "6. Based on your GDHP maturity assessment, which ONE dimension should Sainte-Claire "
+        "address first before its next digital health initiative — and why?",
+        key="aa6", height=100,
+    )
 
     st.markdown("---")
     if st.button("Export Team Report", type="primary"):
         now = datetime.now()
-        after_action = {f"q{i}": st.session_state.get(f"aa{i}", "") for i in range(1, 6)}
+        after_action = {f"q{i}": st.session_state.get(f"aa{i}", "") for i in range(1, 7)}
 
         # Build structured data
         decisions_data = []
@@ -2027,6 +2333,7 @@ _SAVE_KEYS = [
     "team_name", "team_role", "current_phase",
     "decisions", "justifications", "log", "comms",
     "stations_complete", "station_data", "station_checks",
+    "phase3_ic_brief", "phase3_card_intel", "phase3_ic_exchange",
 ]
 
 
@@ -2129,12 +2436,12 @@ def main():
                               "Watch the instructor projection, then log your decisions here.")
     elif phase == 2:
         render_decision_phase(2, "Phase 2: Downtime Operations (Hour 2–24)",
-                              "Respond to inject events as the instructor presents them.")
+                              "Manual workflows, artifact stations, HIE inject, and literacy draft.")
     elif phase == 3:
         render_break()
     elif phase == 4:
         render_decision_phase(4, "Phase 4: Escalation & Pressure (Hour 24–48)",
-                              "The pressure mounts. Media, families, staff, departments in conflict.")
+                              "Media, families, staff morale, WHO GDHP notification, literacy final draft.")
     elif phase == 5:
         render_decision_phase(5, "Phase 5: Critical Decisions (Hour 48–72)",
                               "Ransom. GDPR. Restoration. The hardest choices.")
